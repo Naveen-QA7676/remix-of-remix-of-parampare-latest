@@ -1,6 +1,7 @@
 import TopUtilityHeader from "@/components/layout/TopUtilityHeader";
 import MainHeader from "@/components/layout/MainHeader";
 import HeroSection from "@/components/sections/HeroSection";
+import CircleCategories from "@/components/sections/CircleCategories";
 import FeaturedCategories from "@/components/sections/FeaturedCategories";
 import Bestsellers from "@/components/sections/Bestsellers";
 import CuratedCollection from "@/components/sections/CuratedCollection";
@@ -14,6 +15,7 @@ const Index = () => {
       <MainHeader />
       <main>
         <HeroSection />
+        <CircleCategories />
         <FeaturedCategories />
         <Bestsellers />
         <CuratedCollection />
