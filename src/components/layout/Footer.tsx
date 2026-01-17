@@ -33,8 +33,14 @@ const Footer = () => {
               <div className="flex items-start gap-3 text-sm text-muted-foreground"><MapPin size={16} className="mt-0.5" />Ilkal, Karnataka, India</div>
             </div>
             <div className="flex space-x-4">
-              {[Twitter, Instagram, Youtube, Facebook, Linkedin].map((Icon, i) => (
-                <a key={i} href="#" className="w-10 h-10 rounded-full bg-muted-foreground/10 flex items-center justify-center text-muted-foreground hover:bg-gold hover:text-accent-foreground transition-all"><Icon size={18} /></a>
+              {[
+                { Icon: Instagram, href: "https://www.instagram.com" },
+                { Icon: Facebook, href: "https://www.facebook.com" },
+                { Icon: Twitter, href: "https://x.com" },
+                { Icon: Youtube, href: "https://www.youtube.com" },
+                { Icon: Linkedin, href: "https://www.linkedin.com" },
+              ].map(({ Icon, href }, i) => (
+                <a key={i} href={href} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-muted-foreground/10 flex items-center justify-center text-muted-foreground hover:bg-gold hover:text-accent-foreground transition-all"><Icon size={18} /></a>
               ))}
             </div>
           </div>

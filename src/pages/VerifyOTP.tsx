@@ -168,7 +168,7 @@ const VerifyOTP = () => {
                 onClick={handleChangeNumber}
                 className="text-gold text-sm hover:underline mt-2"
               >
-                Change number
+                Change {identifier?.includes("@") ? "email" : "number"}
               </button>
             </div>
 

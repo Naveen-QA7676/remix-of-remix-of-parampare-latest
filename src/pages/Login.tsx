@@ -1,15 +1,13 @@
 import { useState } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Phone } from "lucide-react";
+import { Phone, Home } from "lucide-react";
 
 const Login = () => {
   const [identifier, setIdentifier] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
-  const location = useLocation();
-  const returnTo = location.state?.returnTo || "/";
 
   const validateInput = (value: string) => {
     const phoneRegex = /^[0-9]{10}$/;
@@ -31,7 +29,7 @@ const Login = () => {
       state: { 
         identifier: identifier.trim(), 
         isLogin: true,
-        returnTo 
+        returnTo: "/" 
       } 
     });
   };
@@ -43,7 +41,7 @@ const Login = () => {
         <div className="hidden lg:flex lg:w-1/2 bg-[#3d2a2a] flex-col items-center justify-center p-8">
           <div className="text-center mb-6">
             <p className="text-cream/80 text-sm mb-1 font-body">Welcome to</p>
-            <h1 className="text-3xl font-display font-bold text-cream mb-1">Parampare</h1>
+            <h1 className="text-3xl font-display font-bold text-cream mb-1">ಪರಂಪರೆ</h1>
             <p className="text-cream/80 text-sm tracking-wide font-body">Authentic Ilkal Sarees</p>
           </div>
           
@@ -107,64 +105,68 @@ const Login = () => {
         </div>
 
         {/* Right Side - Login Form */}
-        <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-card">
-          <div className="w-full max-w-sm">
-            {/* Login Header */}
-            <div className="text-center mb-6">
-              <h2 className="text-2xl font-display font-semibold text-foreground">
-                Login
-              </h2>
-            </div>
+        <div className="w-full lg:w-1/2 flex flex-col bg-card">
+          {/* Back to Home Header */}
+          <div className="p-4 border-b border-border/50">
+            <Link to="/" className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
+              <Home className="h-4 w-4" />
+              <span className="text-sm font-medium">Back to ಪರಂಪರೆ</span>
+            </Link>
+          </div>
 
-            {/* Login Form */}
-            <div className="space-y-5">
-              <div className="relative">
-                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                  <Phone className="h-5 w-5" />
+          <div className="flex-1 flex items-center justify-center p-8">
+            <div className="w-full max-w-sm">
+              {/* Login Header */}
+              <div className="text-center mb-6">
+                <h2 className="text-2xl font-display font-semibold text-foreground">
+                  Login
+                </h2>
+              </div>
+
+              {/* Login Form */}
+              <div className="space-y-5">
+                <div className="relative">
+                  <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                    <Phone className="h-5 w-5" />
+                  </div>
+                  <Input
+                    id="identifier"
+                    type="text"
+                    placeholder="Enter mobile number or email"
+                    value={identifier}
+                    onChange={(e) => {
+                      setIdentifier(e.target.value);
+                      setError("");
+                    }}
+                    className={`h-12 pl-10 ${error ? "border-destructive" : ""}`}
+                  />
                 </div>
-                <Input
-                  id="identifier"
-                  type="text"
-                  placeholder="Enter mobile number or email"
-                  value={identifier}
-                  onChange={(e) => {
-                    setIdentifier(e.target.value);
-                    setError("");
-                  }}
-                  className={`h-12 pl-10 ${error ? "border-destructive" : ""}`}
-                />
-              </div>
-              {error && (
-                <p className="text-destructive text-sm">{error}</p>
-              )}
+                {error && (
+                  <p className="text-destructive text-sm">{error}</p>
+                )}
 
-              <Button 
-                onClick={handleGetOTP}
-                className="w-full h-12 bg-maroon hover:bg-maroon-dark text-white font-medium"
-              >
-                Get OTP
-              </Button>
-
-              {/* Helper Links */}
-              <div className="flex justify-center gap-4 text-sm">
-                <button 
-                  onClick={() => navigate(-1)}
-                  className="text-muted-foreground hover:text-foreground transition-colors underline"
+                <Button 
+                  onClick={handleGetOTP}
+                  className="w-full h-12 bg-maroon hover:bg-maroon-dark text-white font-medium"
                 >
-                  Change number
-                </button>
-                <Link to="/register" className="text-gold hover:underline font-medium">
-                  New user? Register
-                </Link>
-              </div>
+                  Get OTP
+                </Button>
 
-              {/* Terms */}
-              <p className="text-xs text-center text-muted-foreground pt-2">
-                By continuing, you agree to Parampare's{" "}
-                <Link to="/terms" className="text-gold hover:underline">Terms of Service</Link>
-                {" "}and{" "}
-                <Link to="/privacy" className="text-gold hover:underline">Privacy Policy</Link>
-              </p>
+                {/* Helper Links */}
+                <div className="flex justify-center text-sm">
+                  <Link to="/register" className="text-gold hover:underline font-medium">
+                    New user? Register
+                  </Link>
+                </div>
+
+                {/* Terms */}
+                <p className="text-xs text-center text-muted-foreground pt-2">
+                  By continuing, you agree to Parampare's{" "}
+                  <Link to="/terms-of-use" className="text-gold hover:underline">Terms of Service</Link>
+                  {" "}and{" "}
+                  <Link to="/privacy-policy" className="text-gold hover:underline">Privacy Policy</Link>
+                </p>
+              </div>
             </div>
           </div>
         </div>
