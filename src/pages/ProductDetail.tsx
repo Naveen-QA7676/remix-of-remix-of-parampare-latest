@@ -1,21 +1,26 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { Heart, Star, Minus, Plus, ShoppingBag, Zap, Truck, RotateCcw, Shield, Check, Share2, Ruler, X } from "lucide-react";
+import { Heart, Star, Minus, Plus, ShoppingBag, Zap, Truck, RotateCcw, Shield, Check, Share2, Ruler } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import TopUtilityHeader from "@/components/layout/TopUtilityHeader";
 import MainHeader from "@/components/layout/MainHeader";
 import Footer from "@/components/layout/Footer";
+import BackToTop from "@/components/layout/BackToTop";
 import { useToast } from "@/hooks/use-toast";
+import { useWishlist } from "@/hooks/useWishlist";
 
 const ProductDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { isInWishlist, toggleWishlist } = useWishlist();
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
-  const [isWishlisted, setIsWishlisted] = useState(false);
+  const [isZooming, setIsZooming] = useState(false);
+  const [zoomPosition, setZoomPosition] = useState({ x: 50, y: 50 });
+  const imageRef = useRef<HTMLDivElement>(null);
 
   // Sample product data
   const product = {
@@ -43,12 +48,19 @@ const ProductDetail = () => {
     ],
   };
 
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!imageRef.current) return;
+    const rect = imageRef.current.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    setZoomPosition({ x, y });
+  };
+
   const dispatchCartUpdate = () => {
     window.dispatchEvent(new Event("cartUpdated"));
   };
 
   const handleAddToCart = () => {
-    // Get existing cart or create new
     const existingCart = JSON.parse(localStorage.getItem("cart") || "[]");
     const existingItem = existingCart.find((item: { id: string }) => item.id === product.id);
     
@@ -68,7 +80,6 @@ const ProductDetail = () => {
   };
 
   const handleBuyNow = () => {
-    // Add to cart first
     const existingCart = JSON.parse(localStorage.getItem("cart") || "[]");
     const existingItem = existingCart.find((item: { id: string }) => item.id === product.id);
     
@@ -81,7 +92,6 @@ const ProductDetail = () => {
     localStorage.setItem("cart", JSON.stringify(existingCart));
     dispatchCartUpdate();
     
-    // Check if logged in
     const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
     if (!isLoggedIn) {
       navigate("/login", { state: { returnTo: "/checkout" } });
@@ -89,6 +99,29 @@ const ProductDetail = () => {
       navigate("/checkout");
     }
   };
+
+  const handleWishlistClick = () => {
+    const wasAdded = toggleWishlist({
+      id: product.id,
+      name: product.name,
+      image: product.images[0],
+      price: product.price,
+      originalPrice: product.originalPrice,
+      rating: product.rating,
+      reviews: product.reviews,
+      badge: product.badge,
+      inStock: product.inStock,
+    });
+    
+    toast({
+      title: wasAdded ? "Added to Wishlist" : "Removed from Wishlist",
+      description: wasAdded 
+        ? `${product.name} has been added to your wishlist.`
+        : `${product.name} has been removed from your wishlist.`,
+    });
+  };
+
+  const isWishlisted = isInWishlist(product.id);
 
   return (
     <div className="min-h-screen bg-background font-body">
@@ -106,26 +139,17 @@ const ProductDetail = () => {
         </nav>
 
         <div className="grid lg:grid-cols-2 gap-8 lg:gap-12">
-          {/* Left Side - Image Gallery */}
-          <div className="space-y-4">
-            {/* Main Image */}
-            <div className="aspect-[3/4] rounded-2xl overflow-hidden bg-secondary">
-              <img
-                src={product.images[selectedImage]}
-                alt={product.name}
-                className="w-full h-full object-cover"
-              />
-            </div>
-
-            {/* Thumbnail Gallery */}
-            <div className="flex gap-3 overflow-x-auto pb-2">
+          {/* Left Side - Image Gallery with Flipkart-style layout */}
+          <div className="flex flex-col lg:flex-row gap-4">
+            {/* Thumbnails - Left side on desktop */}
+            <div className="order-2 lg:order-1 flex lg:flex-col gap-3 overflow-x-auto lg:overflow-y-auto lg:max-h-[600px] pb-2 lg:pb-0 lg:pr-2">
               {product.images.map((image, index) => (
                 <button
                   key={index}
                   onClick={() => setSelectedImage(index)}
-                  className={`flex-shrink-0 w-20 h-24 rounded-lg overflow-hidden border-2 transition-all ${
+                  className={`flex-shrink-0 w-16 h-20 lg:w-20 lg:h-24 rounded-lg overflow-hidden border-2 transition-all ${
                     selectedImage === index
-                      ? "border-gold"
+                      ? "border-gold ring-2 ring-gold/30"
                       : "border-transparent hover:border-border"
                   }`}
                 >
@@ -136,6 +160,48 @@ const ProductDetail = () => {
                   />
                 </button>
               ))}
+            </div>
+
+            {/* Main Image with Zoom */}
+            <div className="order-1 lg:order-2 flex-1 flex gap-4">
+              <div
+                ref={imageRef}
+                className="relative aspect-[3/4] rounded-2xl overflow-hidden bg-secondary cursor-zoom-in flex-1"
+                onMouseMove={handleMouseMove}
+                onMouseEnter={() => setIsZooming(true)}
+                onMouseLeave={() => setIsZooming(false)}
+              >
+                <img
+                  src={product.images[selectedImage]}
+                  alt={product.name}
+                  className="w-full h-full object-cover"
+                />
+                
+                {/* Zoom lens indicator */}
+                {isZooming && (
+                  <div
+                    className="absolute w-32 h-32 border-2 border-gold/50 rounded-lg pointer-events-none bg-gold/10"
+                    style={{
+                      left: `calc(${zoomPosition.x}% - 64px)`,
+                      top: `calc(${zoomPosition.y}% - 64px)`,
+                    }}
+                  />
+                )}
+              </div>
+
+              {/* Zoom Panel - Side (Desktop only) */}
+              {isZooming && (
+                <div className="hidden lg:block w-[400px] h-[500px] rounded-2xl overflow-hidden border border-border shadow-xl bg-secondary flex-shrink-0">
+                  <div
+                    className="w-full h-full"
+                    style={{
+                      backgroundImage: `url(${product.images[selectedImage]})`,
+                      backgroundSize: "250%",
+                      backgroundPosition: `${zoomPosition.x}% ${zoomPosition.y}%`,
+                    }}
+                  />
+                </div>
+              )}
             </div>
           </div>
 
@@ -332,7 +398,7 @@ const ProductDetail = () => {
             {/* Wishlist Button */}
             <Button
               variant="ghost"
-              onClick={() => setIsWishlisted(!isWishlisted)}
+              onClick={handleWishlistClick}
               className="w-full gap-2"
             >
               <Heart
@@ -388,6 +454,7 @@ const ProductDetail = () => {
       </main>
 
       <Footer />
+      <BackToTop />
     </div>
   );
 };

@@ -129,14 +129,14 @@ const MainHeader = () => {
               </Link>
             ))}
 
-            <NavigationMenu>
-              <NavigationMenuList>
+            <NavigationMenu className="relative z-50">
+              <NavigationMenuList className="gap-0">
                 {/* SAREES Mega Menu */}
                 <NavigationMenuItem>
-                  <NavigationMenuTrigger className="bg-transparent hover:bg-transparent data-[state=open]:bg-transparent font-body text-sm font-medium tracking-wide text-foreground/80 hover:text-foreground">
+                  <NavigationMenuTrigger className="bg-transparent hover:bg-accent/50 data-[state=open]:bg-accent/50 font-body text-sm font-medium tracking-wide text-foreground/80 hover:text-foreground h-10 px-4">
                     SAREES
                   </NavigationMenuTrigger>
-                  <NavigationMenuContent>
+                  <NavigationMenuContent className="z-[100]">
                     <div className="w-[600px] p-6 bg-card border border-border shadow-xl rounded-lg">
                       <div className="grid grid-cols-3 gap-6">
                         {sareesCategories.map((group) => (
@@ -167,10 +167,10 @@ const MainHeader = () => {
 
                 {/* DRESS MATERIALS */}
                 <NavigationMenuItem>
-                  <NavigationMenuTrigger className="bg-transparent hover:bg-transparent data-[state=open]:bg-transparent font-body text-sm font-medium tracking-wide text-foreground/80 hover:text-foreground">
+                  <NavigationMenuTrigger className="bg-transparent hover:bg-accent/50 data-[state=open]:bg-accent/50 font-body text-sm font-medium tracking-wide text-foreground/80 hover:text-foreground h-10 px-4">
                     DRESS MATERIALS
                   </NavigationMenuTrigger>
-                  <NavigationMenuContent>
+                  <NavigationMenuContent className="z-[100]">
                     <div className="w-[250px] p-4 bg-card border border-border shadow-xl rounded-lg">
                       <ul className="space-y-2">
                         {dressMaterialsCategories.map((item) => (
@@ -192,10 +192,10 @@ const MainHeader = () => {
 
                 {/* OCCASIONS */}
                 <NavigationMenuItem>
-                  <NavigationMenuTrigger className="bg-transparent hover:bg-transparent data-[state=open]:bg-transparent font-body text-sm font-medium tracking-wide text-foreground/80 hover:text-foreground">
+                  <NavigationMenuTrigger className="bg-transparent hover:bg-accent/50 data-[state=open]:bg-accent/50 font-body text-sm font-medium tracking-wide text-foreground/80 hover:text-foreground h-10 px-4">
                     OCCASIONS
                   </NavigationMenuTrigger>
-                  <NavigationMenuContent>
+                  <NavigationMenuContent className="z-[100]">
                     <div className="w-[250px] p-4 bg-card border border-border shadow-xl rounded-lg">
                       <ul className="space-y-2">
                         {occasionsCategories.map((item) => (
