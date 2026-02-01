@@ -23,6 +23,12 @@ import ProductFilters from "@/components/products/ProductFilters";
 import { useWishlist } from "@/hooks/useWishlist";
 import { useToast } from "@/hooks/use-toast";
 
+// Import actual saree images
+import saree1 from "@/assets/saree-1.jpg";
+import saree2 from "@/assets/saree-2.jpg";
+import saree3 from "@/assets/saree-3.jpg";
+import saree4 from "@/assets/saree-4.jpg";
+
 interface Product {
   id: string;
   name: string;
@@ -55,12 +61,12 @@ const sortOptions = [
   { label: "Discount: High to Low", value: "discount-desc" },
 ];
 
-// Sample products data with filter attributes
+// Sample products data with actual images
 const allProducts: Product[] = [
   {
     id: "1",
     name: "Ilkal Saree – Teni Pallu Red",
-    image: "/placeholder.svg",
+    image: saree1,
     price: 2999,
     originalPrice: 4499,
     rating: 4.6,
@@ -79,7 +85,7 @@ const allProducts: Product[] = [
   {
     id: "2",
     name: "Traditional Kasuti Work Saree",
-    image: "/placeholder.svg",
+    image: saree2,
     price: 3499,
     originalPrice: 5999,
     rating: 4.8,
@@ -98,7 +104,7 @@ const allProducts: Product[] = [
   {
     id: "3",
     name: "Handwoven Silk Ilkal Saree",
-    image: "/placeholder.svg",
+    image: saree3,
     price: 4299,
     rating: 4.5,
     reviews: 56,
@@ -116,7 +122,7 @@ const allProducts: Product[] = [
   {
     id: "4",
     name: "Cotton Ilkal Saree – Blue",
-    image: "/placeholder.svg",
+    image: saree4,
     price: 1999,
     originalPrice: 2999,
     rating: 4.4,
@@ -134,7 +140,7 @@ const allProducts: Product[] = [
   {
     id: "5",
     name: "Festive Maroon Ilkal Saree",
-    image: "/placeholder.svg",
+    image: saree1,
     price: 3799,
     originalPrice: 5499,
     rating: 4.7,
@@ -153,12 +159,12 @@ const allProducts: Product[] = [
   {
     id: "6",
     name: "Pure Silk Teni Border Saree",
-    image: "/placeholder.svg",
+    image: saree2,
     price: 5499,
     rating: 4.9,
     reviews: 45,
     badge: "GI Certified",
-    inStock: false,
+    inStock: true,
     fabric: "pure-silk",
     color: "yellow",
     occasion: "wedding",
@@ -171,7 +177,7 @@ const allProducts: Product[] = [
   {
     id: "7",
     name: "Daily Wear Cotton Saree",
-    image: "/placeholder.svg",
+    image: saree3,
     price: 1499,
     originalPrice: 1999,
     rating: 4.2,
@@ -189,7 +195,7 @@ const allProducts: Product[] = [
   {
     id: "8",
     name: "Office Wear Art Silk Saree",
-    image: "/placeholder.svg",
+    image: saree4,
     price: 2499,
     rating: 4.3,
     reviews: 98,
@@ -224,6 +230,30 @@ const Products = () => {
   // Filter and sort products using useMemo
   const filteredAndSortedProducts = useMemo(() => {
     let result = [...allProducts];
+
+    // Apply URL query params for filtering
+    const fabricParam = searchParams.get("fabric");
+    const occasionParam = searchParams.get("occasion");
+    const palluParam = searchParams.get("pallu");
+    const borderParam = searchParams.get("border");
+    const weaveParam = searchParams.get("weave");
+    const designParam = searchParams.get("design");
+
+    if (fabricParam) {
+      result = result.filter((p) => p.fabric?.includes(fabricParam));
+    }
+    if (occasionParam) {
+      result = result.filter((p) => p.occasion === occasionParam);
+    }
+    if (palluParam) {
+      result = result.filter((p) => p.pallu?.includes(palluParam));
+    }
+    if (borderParam) {
+      result = result.filter((p) => p.border?.includes(borderParam));
+    }
+    if (weaveParam) {
+      result = result.filter((p) => p.weave?.includes(weaveParam));
+    }
 
     // Apply price filter
     result = result.filter(
@@ -280,7 +310,7 @@ const Products = () => {
     }
 
     return result;
-  }, [selectedFilters, priceRange, sortBy]);
+  }, [selectedFilters, priceRange, sortBy, searchParams]);
 
   const handleFilterChange = (key: string, value: string, checked: boolean) => {
     setSelectedFilters((prev) => {
@@ -498,62 +528,56 @@ const Products = () => {
                           src={product.image}
                           alt={product.name}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          onError={(e) => {
+                            e.currentTarget.src = saree1;
+                          }}
                         />
                       </Link>
-
+                      
                       {/* Badge */}
                       {product.badge && (
-                        <Badge
-                          className={`absolute top-3 left-3 ${getBadgeColor(product.badge)}`}
-                        >
-                          {product.badge}
-                        </Badge>
+                        <div className="absolute top-3 left-3">
+                          <Badge className={getBadgeColor(product.badge)}>
+                            {product.badge}
+                          </Badge>
+                        </div>
                       )}
-
+                      
                       {/* Wishlist Button */}
                       <button
                         onClick={() => handleWishlistClick(product)}
-                        className="absolute top-3 right-3 w-9 h-9 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-md hover:bg-white transition-colors"
+                        className="absolute top-3 right-3 w-9 h-9 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-sm hover:bg-white transition-colors"
                       >
                         <Heart
-                          className={`h-5 w-5 transition-all ${
+                          className={`h-5 w-5 ${
                             isInWishlist(product.id)
                               ? "fill-destructive text-destructive"
                               : "text-foreground/70"
                           }`}
                         />
                       </button>
-
-                      {/* Out of Stock Overlay */}
-                      {!product.inStock && (
-                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                          <span className="text-white font-medium px-4 py-2 bg-black/70 rounded-lg">
-                            Out of Stock
-                          </span>
-                        </div>
-                      )}
                     </div>
 
                     {/* Product Info */}
                     <div className="p-4">
                       <Link to={`/product/${product.id}`}>
-                        <h3 className="font-medium text-foreground mb-2 line-clamp-2 group-hover:text-gold transition-colors">
+                        <h3 className="font-medium text-foreground line-clamp-2 hover:text-gold transition-colors mb-2">
                           {product.name}
                         </h3>
                       </Link>
-
+                      
                       {/* Rating */}
                       <div className="flex items-center gap-1 mb-2">
                         <Star className="h-4 w-4 fill-gold text-gold" />
                         <span className="text-sm font-medium">{product.rating}</span>
-                        <span className="text-xs text-muted-foreground">
+                        <span className="text-sm text-muted-foreground">
                           ({product.reviews})
                         </span>
                       </div>
-
+                      
                       {/* Price */}
-                      <div className="flex items-center gap-2">
-                        <span className="text-lg font-semibold text-foreground">
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-lg font-bold text-foreground">
                           ₹{product.price.toLocaleString()}
                         </span>
                         {product.originalPrice && (
@@ -561,7 +585,7 @@ const Products = () => {
                             <span className="text-sm text-muted-foreground line-through">
                               ₹{product.originalPrice.toLocaleString()}
                             </span>
-                            <span className="text-xs text-green-600 font-medium">
+                            <span className="text-sm text-green-600 font-medium">
                               {getDiscount(product)}% off
                             </span>
                           </>

@@ -11,22 +11,34 @@ import BackToTop from "@/components/layout/BackToTop";
 import { useToast } from "@/hooks/use-toast";
 import { useWishlist } from "@/hooks/useWishlist";
 
-const ProductDetail = () => {
-  const { id } = useParams();
-  const navigate = useNavigate();
-  const { toast } = useToast();
-  const { isInWishlist, toggleWishlist } = useWishlist();
-  const [quantity, setQuantity] = useState(1);
-  const [selectedImage, setSelectedImage] = useState(0);
-  const [isZooming, setIsZooming] = useState(false);
-  const [zoomPosition, setZoomPosition] = useState({ x: 50, y: 50 });
-  const imageRef = useRef<HTMLDivElement>(null);
+// Import actual saree images
+import saree1 from "@/assets/saree-1.jpg";
+import saree2 from "@/assets/saree-2.jpg";
+import saree3 from "@/assets/saree-3.jpg";
+import saree4 from "@/assets/saree-4.jpg";
 
-  // Sample product data
-  const product = {
-    id: id || "1",
+// Product data with actual images
+const productsData: Record<string, {
+  id: string;
+  name: string;
+  images: string[];
+  price: number;
+  originalPrice?: number;
+  rating: number;
+  reviews: number;
+  badge?: string;
+  inStock: boolean;
+  color: string;
+  borderType: string;
+  blousePiece: boolean;
+  deliveryDays: string;
+  description: string;
+  careInstructions: string[];
+}> = {
+  "1": {
+    id: "1",
     name: "Authentic Ilkal Saree – Teni Pallu",
-    images: ["/placeholder.svg", "/placeholder.svg", "/placeholder.svg", "/placeholder.svg"],
+    images: [saree1, saree2, saree3, saree4],
     price: 2999,
     originalPrice: 4499,
     rating: 4.6,
@@ -38,15 +50,100 @@ const ProductDetail = () => {
     blousePiece: true,
     deliveryDays: "5-7",
     description: `This exquisite Ilkal saree showcases the rich heritage of Karnataka's handloom tradition. 
-    Crafted by skilled artisans, it features the distinctive Teni Pallu design with intricate kasuti work.
-    The saree is made from premium quality cotton-silk blend, ensuring comfort and elegance.`,
+Crafted by skilled artisans, it features the distinctive Teni Pallu design with intricate kasuti work.
+The saree is made from premium quality cotton-silk blend, ensuring comfort and elegance.`,
     careInstructions: [
       "Hand wash recommended",
       "Use mild detergent",
       "Dry in shade",
       "Iron on medium heat",
     ],
-  };
+  },
+  "2": {
+    id: "2",
+    name: "Traditional Kasuti Work Saree",
+    images: [saree2, saree1, saree4, saree3],
+    price: 3499,
+    originalPrice: 5999,
+    rating: 4.8,
+    reviews: 89,
+    badge: "GI Certified",
+    inStock: true,
+    color: "Forest Green",
+    borderType: "Temple Border",
+    blousePiece: true,
+    deliveryDays: "5-7",
+    description: `A stunning example of traditional Kasuti embroidery on authentic Ilkal fabric.
+This saree features intricate geometric patterns handwoven by master artisans from Karnataka.
+Perfect for weddings and special celebrations.`,
+    careInstructions: [
+      "Dry clean recommended",
+      "Store in muslin cloth",
+      "Avoid direct sunlight",
+      "Iron on silk setting",
+    ],
+  },
+  "3": {
+    id: "3",
+    name: "Handwoven Silk Ilkal Saree",
+    images: [saree3, saree4, saree1, saree2],
+    price: 4299,
+    rating: 4.5,
+    reviews: 56,
+    badge: "New Arrival",
+    inStock: true,
+    color: "Royal Maroon",
+    borderType: "Broad Zari Border",
+    blousePiece: true,
+    deliveryDays: "5-7",
+    description: `Luxurious pure silk Ilkal saree with heavy zari work throughout.
+This masterpiece features traditional motifs and a rich pallu that makes a statement.
+Ideal for bridal wear and grand celebrations.`,
+    careInstructions: [
+      "Dry clean only",
+      "Store with silica gel packets",
+      "Avoid perfumes on fabric",
+      "Use padded hangers",
+    ],
+  },
+  "4": {
+    id: "4",
+    name: "Cotton Ilkal Saree – Blue",
+    images: [saree4, saree3, saree2, saree1],
+    price: 1999,
+    originalPrice: 2999,
+    rating: 4.4,
+    reviews: 234,
+    inStock: true,
+    color: "Royal Blue",
+    borderType: "Self Border",
+    blousePiece: true,
+    deliveryDays: "3-5",
+    description: `Comfortable and elegant pure cotton Ilkal saree perfect for daily wear.
+This lightweight saree features subtle traditional patterns and is ideal for office or casual outings.
+Breathable fabric keeps you cool throughout the day.`,
+    careInstructions: [
+      "Machine wash gentle cycle",
+      "Use mild detergent",
+      "Tumble dry low",
+      "Iron on cotton setting",
+    ],
+  },
+};
+
+const ProductDetail = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const { isInWishlist, toggleWishlist } = useWishlist();
+  const [quantity, setQuantity] = useState(1);
+  const [selectedImage, setSelectedImage] = useState(0);
+  const [isZooming, setIsZooming] = useState(false);
+  const [zoomPosition, setZoomPosition] = useState({ x: 50, y: 50 });
+  const imageRef = useRef<HTMLDivElement>(null);
+
+  // Get product data or fallback to default
+  const product = productsData[id || "1"] || productsData["1"];
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!imageRef.current) return;
@@ -67,7 +164,11 @@ const ProductDetail = () => {
     if (existingItem) {
       existingItem.quantity = Math.min(existingItem.quantity + quantity, 5);
     } else {
-      existingCart.push({ ...product, quantity });
+      existingCart.push({ 
+        ...product, 
+        quantity,
+        image: product.images[0] 
+      });
     }
     
     localStorage.setItem("cart", JSON.stringify(existingCart));
@@ -86,7 +187,11 @@ const ProductDetail = () => {
     if (existingItem) {
       existingItem.quantity = Math.min(existingItem.quantity + quantity, 5);
     } else {
-      existingCart.push({ ...product, quantity });
+      existingCart.push({ 
+        ...product, 
+        quantity,
+        image: product.images[0]
+      });
     }
     
     localStorage.setItem("cart", JSON.stringify(existingCart));
@@ -444,7 +549,7 @@ const ProductDetail = () => {
             <ul className="space-y-2">
               {product.careInstructions.map((instruction, index) => (
                 <li key={index} className="flex items-center gap-2 text-muted-foreground">
-                  <Check className="h-4 w-4 text-green-600" />
+                  <Check className="h-4 w-4 text-gold flex-shrink-0" />
                   {instruction}
                 </li>
               ))}
