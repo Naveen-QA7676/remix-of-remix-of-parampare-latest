@@ -1,15 +1,8 @@
-import { Search, Heart, User, ShoppingBag, Menu, X, LogOut, UserPlus, Coins, Tag, ChevronDown } from "lucide-react";
+import { Search, Heart, User, ShoppingBag, Menu, X, LogOut, MapPin, Package, RefreshCw, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import {
   Tooltip,
   TooltipContent,
@@ -26,21 +19,38 @@ import {
 import { sareesCategories, dressMaterialsCategories, occasionsCategories } from "@/data/categories";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import logoImage from "@/assets/logo.jpg";
 
 const MainHeader = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userName, setUserName] = useState("");
   const [cartCount, setCartCount] = useState(0);
   const [wishlistCount, setWishlistCount] = useState(0);
   const [mobileDropdown, setMobileDropdown] = useState<string | null>(null);
+  const [accountHovered, setAccountHovered] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
 
   useEffect(() => {
     const checkAuth = () => {
-      setIsLoggedIn(localStorage.getItem("isLoggedIn") === "true");
+      const loggedIn = localStorage.getItem("isLoggedIn") === "true";
+      setIsLoggedIn(loggedIn);
+      
+      if (loggedIn) {
+        const userData = localStorage.getItem("parampare_user");
+        if (userData) {
+          try {
+            const parsed = JSON.parse(userData);
+            setUserName(parsed.fullName || "User");
+          } catch {
+            setUserName("User");
+          }
+        }
+      }
+      
       const cart = JSON.parse(localStorage.getItem("cart") || "[]");
       setCartCount(cart.reduce((sum: number, item: any) => sum + (item.quantity || 1), 0));
       const wishlist = JSON.parse(localStorage.getItem("wishlist") || "[]");
@@ -61,8 +71,13 @@ const MainHeader = () => {
 
   const handleLogout = () => {
     localStorage.removeItem("isLoggedIn");
-    localStorage.removeItem("userData");
+    localStorage.removeItem("parampare_user");
     setIsLoggedIn(false);
+    setUserName("");
+    toast({
+      title: "Signed Out",
+      description: "You have been successfully signed out.",
+    });
     navigate("/");
   };
 
@@ -71,7 +86,7 @@ const MainHeader = () => {
     if (location.pathname === "/") {
       document.getElementById("bestsellers")?.scrollIntoView({ behavior: "smooth" });
     } else {
-      navigate("/#bestsellers");
+      navigate("/", { state: { scrollTo: "bestsellers" } });
     }
   };
 
@@ -85,6 +100,15 @@ const MainHeader = () => {
 
   const handleWishlistClick = () => {
     navigate("/wishlist");
+  };
+
+  const handleAccountAction = (path: string) => {
+    if (!isLoggedIn) {
+      navigate("/login", { state: { returnTo: path } });
+    } else {
+      navigate(path);
+    }
+    setAccountHovered(false);
   };
 
   const simpleMenuItems = [
@@ -107,11 +131,13 @@ const MainHeader = () => {
             {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </Button>
 
-          {/* Logo - Kannada */}
+          {/* Logo - Image */}
           <Link to="/" className="flex-shrink-0">
-            <h1 className="text-2xl md:text-3xl font-display font-semibold text-foreground tracking-tight">
-              ಪರಂಪರೆ
-            </h1>
+            <img 
+              src={logoImage} 
+              alt="Parampare" 
+              className="h-10 md:h-12 w-auto object-contain"
+            />
           </Link>
 
           {/* Desktop Navigation with Mega Dropdowns */}
@@ -258,57 +284,76 @@ const MainHeader = () => {
               <TooltipContent>Wishlist</TooltipContent>
             </Tooltip>
             
-            {/* User Menu */}
-            <DropdownMenu>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="text-foreground/70 hover:text-foreground hover:bg-transparent">
-                      <User className="h-5 w-5" strokeWidth={1.5} />
-                    </Button>
-                  </DropdownMenuTrigger>
-                </TooltipTrigger>
-                <TooltipContent>My Account</TooltipContent>
-              </Tooltip>
-              <DropdownMenuContent align="end" className="w-48 bg-card border-border">
-                {isLoggedIn ? (
-                  <>
-                    <DropdownMenuItem onClick={() => navigate("/profile")}>
-                      <User className="h-4 w-4 mr-2" />
-                      My Profile
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => navigate("/orders")}>
-                      <ShoppingBag className="h-4 w-4 mr-2" />
-                      My Orders
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => navigate("/coins")}>
-                      <Coins className="h-4 w-4 mr-2" />
-                      Parampare Coins
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => navigate("/coupons")}>
-                      <Tag className="h-4 w-4 mr-2" />
-                      My Coupons
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={handleLogout} className="text-destructive">
-                      <LogOut className="h-4 w-4 mr-2" />
-                      Logout
-                    </DropdownMenuItem>
-                  </>
-                ) : (
-                  <>
-                    <DropdownMenuItem onClick={() => navigate("/login")}>
-                      <User className="h-4 w-4 mr-2" />
-                      Sign In
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => navigate("/register")}>
-                      <UserPlus className="h-4 w-4 mr-2" />
-                      Sign Up Now
-                    </DropdownMenuItem>
-                  </>
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
+            {/* Amazon-style Account Dropdown */}
+            <div 
+              className="relative"
+              onMouseEnter={() => setAccountHovered(true)}
+              onMouseLeave={() => setAccountHovered(false)}
+            >
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="text-foreground/70 hover:text-foreground hover:bg-transparent"
+              >
+                <User className="h-5 w-5" strokeWidth={1.5} />
+              </Button>
+              
+              {/* Hover Dropdown */}
+              {accountHovered && (
+                <div className="absolute right-0 top-full pt-2 z-[100]">
+                  <div className="w-56 bg-card border border-border rounded-xl shadow-elevated p-3 animate-fade-in">
+                    {isLoggedIn && (
+                      <div className="px-3 py-2 border-b border-border/50 mb-2">
+                        <p className="text-xs text-muted-foreground">Signed in as</p>
+                        <p className="font-medium text-foreground truncate">{userName}</p>
+                      </div>
+                    )}
+                    
+                    <button
+                      onClick={() => handleAccountAction("/account")}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-foreground hover:bg-secondary rounded-lg transition-colors"
+                    >
+                      <User className="h-4 w-4" />
+                      Your Account
+                    </button>
+                    <button
+                      onClick={() => handleAccountAction("/orders")}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-foreground hover:bg-secondary rounded-lg transition-colors"
+                    >
+                      <Package className="h-4 w-4" />
+                      Your Orders
+                    </button>
+                    <button
+                      onClick={() => handleAccountAction("/addresses")}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-foreground hover:bg-secondary rounded-lg transition-colors"
+                    >
+                      <MapPin className="h-4 w-4" />
+                      Your Addresses
+                    </button>
+                    <button
+                      onClick={() => handleAccountAction("/switch-account")}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-foreground hover:bg-secondary rounded-lg transition-colors"
+                    >
+                      <RefreshCw className="h-4 w-4" />
+                      Switch Account
+                    </button>
+                    
+                    {isLoggedIn && (
+                      <>
+                        <div className="border-t border-border/50 my-2" />
+                        <button
+                          onClick={handleLogout}
+                          className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
+                        >
+                          <LogOut className="h-4 w-4" />
+                          Sign Out
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
             
             {/* Cart */}
             <Tooltip>
@@ -355,7 +400,7 @@ const MainHeader = () => {
             </form>
 
             <div className="flex flex-col gap-1">
-              {simpleMenuItems.map((item, index) => (
+              {simpleMenuItems.map((item) => (
                 <Link
                   key={item.label}
                   to={item.href}
@@ -458,11 +503,25 @@ const MainHeader = () => {
                 {isLoggedIn ? (
                   <>
                     <Link
+                      to="/account"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="block font-body text-base font-medium py-3 px-2 rounded-lg hover:bg-secondary text-foreground"
+                    >
+                      My Account
+                    </Link>
+                    <Link
                       to="/orders"
                       onClick={() => setIsMobileMenuOpen(false)}
                       className="block font-body text-base font-medium py-3 px-2 rounded-lg hover:bg-secondary text-foreground"
                     >
                       My Orders
+                    </Link>
+                    <Link
+                      to="/addresses"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="block font-body text-base font-medium py-3 px-2 rounded-lg hover:bg-secondary text-foreground"
+                    >
+                      My Addresses
                     </Link>
                     <Link
                       to="/wishlist"
@@ -478,7 +537,7 @@ const MainHeader = () => {
                       }}
                       className="w-full text-left font-body text-base font-medium py-3 px-2 rounded-lg hover:bg-secondary text-destructive"
                     >
-                      Logout
+                      Sign Out
                     </button>
                   </>
                 ) : (

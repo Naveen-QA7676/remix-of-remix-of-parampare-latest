@@ -2,7 +2,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { useEffect } from "react";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
@@ -27,10 +28,30 @@ import RefundPolicy from "./pages/RefundPolicy";
 import CookiePolicy from "./pages/CookiePolicy";
 import ContactUs from "./pages/ContactUs";
 import Wishlist from "./pages/Wishlist";
+import YourAccount from "./pages/YourAccount";
+import YourAddresses from "./pages/YourAddresses";
+import SwitchAccount from "./pages/SwitchAccount";
 import ScrollToTop from "./components/ScrollToTop";
 import Chatbot from "./components/Chatbot";
+import WhatsAppButton from "./components/WhatsAppButton";
 
 const queryClient = new QueryClient();
+
+// Component to handle scroll to section on navigation
+const ScrollToSection = () => {
+  const location = useLocation();
+
+  useEffect(() => {
+    // Handle hash navigation for bestsellers
+    if (location.hash === "#bestsellers" || location.state?.scrollTo === "bestsellers") {
+      setTimeout(() => {
+        document.getElementById("bestsellers")?.scrollIntoView({ behavior: "smooth" });
+      }, 100);
+    }
+  }, [location]);
+
+  return null;
+};
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -39,6 +60,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <ScrollToTop />
+        <ScrollToSection />
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/login" element={<Login />} />
@@ -50,6 +72,9 @@ const App = () => (
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/order-confirmation" element={<OrderConfirmation />} />
           <Route path="/orders" element={<MyOrders />} />
+          <Route path="/account" element={<YourAccount />} />
+          <Route path="/addresses" element={<YourAddresses />} />
+          <Route path="/switch-account" element={<SwitchAccount />} />
           <Route path="/ilkal-sarees" element={<IlkalSarees />} />
           <Route path="/our-story" element={<OurStory />} />
           <Route path="/shipping-delivery" element={<ShippingDelivery />} />
@@ -65,6 +90,7 @@ const App = () => (
           <Route path="/wishlist" element={<Wishlist />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
+        <WhatsAppButton />
         <Chatbot />
       </BrowserRouter>
     </TooltipProvider>

@@ -83,18 +83,24 @@ const VerifyOTP = () => {
       return;
     }
 
-    // Simulate OTP verification (in real app, this would be an API call)
-    // For demo, accept "123456" as valid OTP
-    if (otpValue === "123456") {
+    // DUMMY AUTHENTICATION: Only accept specific credentials
+    // Mobile: 1234567890, OTP: 123456
+    if (identifier === "1234567890" && otpValue === "123456") {
       toast({
         title: isLogin ? "Login Successful!" : "Registration Successful!",
         description: "Welcome to Parampare",
       });
-      // Store user session (simplified)
+      
+      // Store user session
       localStorage.setItem("isLoggedIn", "true");
-      if (userData) {
-        localStorage.setItem("userData", JSON.stringify(userData));
-      }
+      
+      const userToStore = userData || {
+        fullName: "Test User",
+        email: "testuser@parampare.com",
+        phone: identifier,
+      };
+      localStorage.setItem("parampare_user", JSON.stringify(userToStore));
+      
       navigate(returnTo || "/");
     } else {
       const newAttempts = attempts + 1;
@@ -108,7 +114,12 @@ const VerifyOTP = () => {
           setAttempts(0);
         }, 300000); // 5 minutes
       } else {
-        setError("Incorrect OTP. Please try again.");
+        // Helpful error message for testing
+        if (identifier !== "1234567890") {
+          setError("Invalid credentials. Use mobile: 1234567890 and OTP: 123456");
+        } else {
+          setError("Incorrect OTP. Use 123456 for testing.");
+        }
       }
     }
   };
@@ -172,6 +183,13 @@ const VerifyOTP = () => {
               </button>
             </div>
 
+            {/* Testing Info */}
+            <div className="bg-secondary/50 rounded-lg p-3 mb-6 text-center">
+              <p className="text-xs text-muted-foreground">
+                For testing: Use OTP <span className="font-mono font-medium text-foreground">123456</span>
+              </p>
+            </div>
+
             {/* OTP Input */}
             <div className="space-y-6">
               <div className="flex justify-center gap-3">
@@ -229,9 +247,9 @@ const VerifyOTP = () => {
               {/* Terms */}
               <p className="text-xs text-center text-muted-foreground">
                 By continuing, you agree to Parampare's{" "}
-                <Link to="/terms" className="text-gold hover:underline">Terms of Service</Link>
+                <Link to="/terms-of-use" className="text-gold hover:underline">Terms of Service</Link>
                 {" "}and{" "}
-                <Link to="/privacy" className="text-gold hover:underline">Privacy Policy</Link>
+                <Link to="/privacy-policy" className="text-gold hover:underline">Privacy Policy</Link>
               </p>
             </div>
           </div>

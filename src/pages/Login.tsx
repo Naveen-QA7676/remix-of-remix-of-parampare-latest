@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Phone, Home, Eye, EyeOff, Mail, Lock } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 type LoginMode = "password" | "otp";
 
@@ -10,10 +11,14 @@ const Login = () => {
   const [loginMode, setLoginMode] = useState<LoginMode>("password");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [identifier, setIdentifier] = useState("");
+  const [phone, setPhone] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const navigate = useNavigate();
+  const location = useLocation();
+  const { toast } = useToast();
+
+  const returnTo = location.state?.returnTo || "/";
 
   const validatePasswordLogin = () => {
     const newErrors: Record<string, string> = {};
@@ -38,12 +43,11 @@ const Login = () => {
   const validateOtpLogin = () => {
     const newErrors: Record<string, string> = {};
     const phoneRegex = /^[0-9]{10}$/;
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     
-    if (!identifier.trim()) {
-      newErrors.identifier = "Please enter a mobile number or email";
-    } else if (!phoneRegex.test(identifier.trim()) && !emailRegex.test(identifier.trim())) {
-      newErrors.identifier = "Please enter a valid mobile number or email";
+    if (!phone.trim()) {
+      newErrors.phone = "Please enter a mobile number";
+    } else if (!phoneRegex.test(phone.trim())) {
+      newErrors.phone = "Please enter a valid 10-digit mobile number";
     }
     
     setErrors(newErrors);
@@ -52,12 +56,21 @@ const Login = () => {
 
   const handlePasswordLogin = () => {
     if (validatePasswordLogin()) {
-      // Demo: Store user in localStorage and navigate to home
-      localStorage.setItem("parampare_user", JSON.stringify({
+      // Store user in localStorage and navigate
+      const userData = {
         email: email,
-        fullName: email.split("@")[0], // Fallback name from email
-      }));
-      navigate("/");
+        fullName: email.split("@")[0],
+        phone: "1234567890",
+      };
+      localStorage.setItem("parampare_user", JSON.stringify(userData));
+      localStorage.setItem("isLoggedIn", "true");
+      
+      toast({
+        title: "Login Successful!",
+        description: "Welcome to Parampare",
+      });
+      
+      navigate(returnTo);
     }
   };
 
@@ -65,9 +78,9 @@ const Login = () => {
     if (validateOtpLogin()) {
       navigate("/verify-otp", { 
         state: { 
-          identifier: identifier.trim(), 
+          identifier: phone.trim(), 
           isLogin: true,
-          returnTo: "/" 
+          returnTo: returnTo 
         } 
       });
     }
@@ -76,7 +89,7 @@ const Login = () => {
   const handleInputChange = (field: string, value: string) => {
     if (field === "email") setEmail(value);
     else if (field === "password") setPassword(value);
-    else if (field === "identifier") setIdentifier(value);
+    else if (field === "phone") setPhone(value.replace(/\D/g, "").slice(0, 10));
     
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: "" }));
@@ -155,6 +168,13 @@ const Login = () => {
                 <rect x="30" y="5" width="80" height="4" fill="#C41E3A" rx="1"/>
               </g>
             </svg>
+          </div>
+
+          {/* Dummy Credentials Info */}
+          <div className="mt-8 p-4 bg-white/10 rounded-lg text-center">
+            <p className="text-cream/80 text-xs mb-2">For Testing (OTP Login):</p>
+            <p className="text-cream text-sm font-mono">Mobile: 1234567890</p>
+            <p className="text-cream text-sm font-mono">OTP: 123456</p>
           </div>
         </div>
 
@@ -271,25 +291,29 @@ const Login = () => {
                 /* OTP Login Form */
                 <div className="space-y-5">
                   <div>
-                    <label htmlFor="identifier" className="block text-sm font-medium text-foreground mb-2">
-                      Mobile Number or Email
+                    <label htmlFor="phone" className="block text-sm font-medium text-foreground mb-2">
+                      Mobile Number
                     </label>
                     <div className="relative">
                       <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
                         <Phone className="h-5 w-5" />
                       </div>
                       <Input
-                        id="identifier"
-                        type="text"
-                        placeholder="Enter mobile number or email"
-                        value={identifier}
-                        onChange={(e) => handleInputChange("identifier", e.target.value)}
-                        className={`h-12 pl-10 ${errors.identifier ? "border-destructive" : ""}`}
+                        id="phone"
+                        type="tel"
+                        placeholder="Enter 10-digit mobile number"
+                        value={phone}
+                        onChange={(e) => handleInputChange("phone", e.target.value)}
+                        className={`h-12 pl-10 ${errors.phone ? "border-destructive" : ""}`}
+                        maxLength={10}
                       />
                     </div>
-                    {errors.identifier && (
-                      <p className="text-destructive text-sm mt-1">{errors.identifier}</p>
+                    {errors.phone && (
+                      <p className="text-destructive text-sm mt-1">{errors.phone}</p>
                     )}
+                    <p className="text-xs text-muted-foreground mt-2">
+                      For testing: Use <span className="font-medium">1234567890</span>
+                    </p>
                   </div>
 
                   <Button 

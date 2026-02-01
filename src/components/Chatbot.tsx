@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from "react";
-import { MessageCircle, Minus, Send, X } from "lucide-react";
+import { useState, useEffect, useRef, forwardRef } from "react";
+import { MessageCircle, Minus, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -11,25 +11,81 @@ interface ChatMessage {
   timestamp: Date;
 }
 
-const Chatbot = () => {
+// Smart AI-like responses based on user queries
+const getSmartResponse = (userMessage: string): string => {
+  const message = userMessage.toLowerCase();
+  
+  // Product queries
+  if (message.includes("cotton") && message.includes("ilkal")) {
+    return "Yes 😊 We offer Pure Cotton and Cotton Silk Ilkal sarees. You can find them under Sarees → Based on Fabric. Would you like me to help you explore our cotton collection?";
+  }
+  if (message.includes("silk") && (message.includes("ilkal") || message.includes("saree"))) {
+    return "We have beautiful Silk Ilkal sarees! Choose from Pure Silk, Cotton Silk, or Art Silk options. Visit Sarees → Based on Fabric to browse our silk collection.";
+  }
+  if (message.includes("wedding") || message.includes("bridal")) {
+    return "Our Wedding Sarees collection features exquisite Ilkal sarees perfect for your special day! Browse Occasions → Wedding Sarees for stunning bridal options with rich zari work.";
+  }
+  if (message.includes("festive") || message.includes("festival") || message.includes("puja")) {
+    return "For festivals, we recommend our Festive Wear collection! These sarees feature vibrant colors and traditional designs. Check Occasions → Festive Wear Sarees.";
+  }
+  
+  // Delivery queries
+  if (message.includes("delivery") || message.includes("shipping") || message.includes("deliver")) {
+    return "We usually deliver within 3–7 working days across India. Free shipping is available on orders above ₹2999. Track your order anytime from My Orders section!";
+  }
+  if (message.includes("track") && message.includes("order")) {
+    return "You can track your order by going to My Account → Your Orders. Click on 'Track Order' for real-time updates. Need help with a specific order?";
+  }
+  
+  // Return/Exchange queries
+  if (message.includes("return") || message.includes("exchange") || message.includes("refund")) {
+    return "We offer a 7-day easy return policy for all products. Visit Returns & Exchange in the footer for complete details. The product should be unused with original tags.";
+  }
+  
+  // Price/Payment queries
+  if (message.includes("price") || message.includes("cost") || message.includes("expensive")) {
+    return "Our Ilkal sarees range from ₹1,499 to ₹5,999+ depending on fabric and work. Use filters on the Products page to find sarees within your budget. We also offer COD!";
+  }
+  if (message.includes("cod") || message.includes("cash on delivery") || message.includes("payment")) {
+    return "Yes! We accept Cash on Delivery, UPI, Credit/Debit Cards, and Net Banking. COD is available for orders up to ₹10,000.";
+  }
+  
+  // Size queries
+  if (message.includes("size") || message.includes("length") || message.includes("measurement")) {
+    return "All our sarees are 5.5 meters in length with 0.8 meters blouse piece (unstitched). Standard width is 1.1 meters. View the Size Guide on any product page for more details.";
+  }
+  
+  // GI Certified
+  if (message.includes("gi") || message.includes("certified") || message.includes("authentic")) {
+    return "Yes! Many of our Ilkal sarees are GI (Geographical Indication) Certified, ensuring authentic handloom craftsmanship from Karnataka. Look for the 'GI Certified' badge on products.";
+  }
+  
+  // Contact queries
+  if (message.includes("contact") || message.includes("call") || message.includes("phone") || message.includes("email")) {
+    return "You can reach us at:\n📞 +91 98765 43210\n📧 hello@parampare.com\n💬 WhatsApp: Click the green icon below\n\nWe're available 9 AM - 9 PM IST!";
+  }
+  
+  // Greetings
+  if (message.includes("hello") || message.includes("hi") || message.includes("hey") || message.includes("namaste")) {
+    return "Namaste! 🙏 How can I help you today? I can assist with:\n• Finding the perfect saree\n• Order tracking & delivery\n• Returns & exchanges\n• Any other questions!";
+  }
+  if (message.includes("thank") || message.includes("thanks")) {
+    return "You're welcome! 🙏 Is there anything else I can help you with? Happy to assist anytime!";
+  }
+  
+  // Default smart response
+  return "Thank you for your query! I can help you with:\n\n• Finding sarees by fabric, occasion, or style\n• Delivery & tracking information\n• Returns and exchanges\n• Payment options\n\nPlease ask a specific question, or contact us at +91 98765 43210 for personalized assistance.";
+};
+
+const Chatbot = forwardRef<HTMLDivElement>((_, ref) => {
   const [isOpen, setIsOpen] = useState(true);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputValue, setInputValue] = useState("");
-  const [userName, setUserName] = useState<string | null>(null);
+  const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Load user name and chat history from localStorage
   useEffect(() => {
-    const userDataStr = localStorage.getItem("parampare_user");
-    if (userDataStr) {
-      try {
-        const userData = JSON.parse(userDataStr);
-        setUserName(userData.fullName || null);
-      } catch {
-        setUserName(null);
-      }
-    }
-
     // Load chat history
     const chatHistoryStr = sessionStorage.getItem("parampare_chat_history");
     if (chatHistoryStr) {
@@ -72,8 +128,8 @@ const Chatbot = () => {
     }
 
     const greeting = name
-      ? `Namaste, ${name} 🙏 Welcome to Parampare! How can I assist you today?`
-      : "Namaste! 🙏 Welcome to Parampare! How can I assist you today?";
+      ? `Namaste, ${name} 🙏 Welcome to Parampare. How can we help you today?`
+      : "Namaste 🙏 Welcome to Parampare. How can we help you today?";
 
     setMessages([
       {
@@ -96,27 +152,22 @@ const Chatbot = () => {
     };
 
     setMessages((prev) => [...prev, userMessage]);
+    const userQuery = inputValue.trim();
     setInputValue("");
+    setIsTyping(true);
 
-    // Simulate bot response
+    // Simulate typing delay for more natural feel
     setTimeout(() => {
-      const botResponses = [
-        "Thank you for reaching out! Our team will assist you shortly.",
-        "I can help you find the perfect Ilkal saree. What occasion are you shopping for?",
-        "We have a wide range of handwoven sarees. Would you like to explore our bestsellers?",
-        "Our customer support team is available from 9 AM to 9 PM. How may I help you?",
-        "Looking for something specific? I can guide you through our collections.",
-      ];
-
       const botMessage: ChatMessage = {
         id: `bot-${Date.now()}`,
-        text: botResponses[Math.floor(Math.random() * botResponses.length)],
+        text: getSmartResponse(userQuery),
         isBot: true,
         timestamp: new Date(),
       };
 
       setMessages((prev) => [...prev, botMessage]);
-    }, 1000);
+      setIsTyping(false);
+    }, 800);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -127,12 +178,12 @@ const Chatbot = () => {
   };
 
   return (
-    <>
-      {/* Minimized Chat Bubble */}
+    <div ref={ref}>
+      {/* Minimized Chat Bubble - positioned to not overlap with BackToTop */}
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-maroon hover:bg-maroon-dark text-white shadow-elevated flex items-center justify-center transition-all duration-300 hover:scale-105 group"
+          className="fixed bottom-24 right-6 z-40 w-14 h-14 rounded-full bg-maroon hover:bg-maroon-dark text-white shadow-elevated flex items-center justify-center transition-all duration-300 hover:scale-105 group"
           title="Need help?"
         >
           <MessageCircle className="h-6 w-6" />
@@ -142,9 +193,9 @@ const Chatbot = () => {
         </button>
       )}
 
-      {/* Expanded Chat Window */}
+      {/* Expanded Chat Window - positioned above WhatsApp and BackToTop */}
       {isOpen && (
-        <div className="fixed bottom-6 right-6 z-50 w-[360px] max-w-[calc(100vw-48px)] bg-card rounded-2xl shadow-elevated border border-border overflow-hidden animate-fade-in-up">
+        <div className="fixed bottom-24 right-6 z-40 w-[360px] max-w-[calc(100vw-48px)] bg-card rounded-2xl shadow-elevated border border-border overflow-hidden animate-fade-in-up">
           {/* Header */}
           <div className="bg-maroon text-white p-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -177,7 +228,7 @@ const Chatbot = () => {
               >
                 <div
                   className={cn(
-                    "max-w-[80%] rounded-2xl px-4 py-2.5 text-sm",
+                    "max-w-[80%] rounded-2xl px-4 py-2.5 text-sm whitespace-pre-line",
                     message.isBot
                       ? "bg-card border border-border text-foreground rounded-bl-sm"
                       : "bg-maroon text-white rounded-br-sm"
@@ -187,6 +238,17 @@ const Chatbot = () => {
                 </div>
               </div>
             ))}
+            {isTyping && (
+              <div className="flex justify-start">
+                <div className="bg-card border border-border text-foreground rounded-2xl rounded-bl-sm px-4 py-2.5 text-sm">
+                  <span className="flex gap-1">
+                    <span className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                    <span className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                    <span className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                  </span>
+                </div>
+              </div>
+            )}
             <div ref={messagesEndRef} />
           </div>
 
@@ -212,8 +274,10 @@ const Chatbot = () => {
           </div>
         </div>
       )}
-    </>
+    </div>
   );
-};
+});
+
+Chatbot.displayName = "Chatbot";
 
 export default Chatbot;
