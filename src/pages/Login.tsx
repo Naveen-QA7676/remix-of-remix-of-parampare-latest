@@ -2,36 +2,90 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Phone, Home } from "lucide-react";
+import { Phone, Home, Eye, EyeOff, Mail, Lock } from "lucide-react";
+
+type LoginMode = "password" | "otp";
 
 const Login = () => {
+  const [loginMode, setLoginMode] = useState<LoginMode>("password");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [identifier, setIdentifier] = useState("");
-  const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const navigate = useNavigate();
 
-  const validateInput = (value: string) => {
+  const validatePasswordLogin = () => {
+    const newErrors: Record<string, string> = {};
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    
+    if (!email.trim()) {
+      newErrors.email = "Email is required";
+    } else if (!emailRegex.test(email)) {
+      newErrors.email = "Please enter a valid email address";
+    }
+    
+    if (!password.trim()) {
+      newErrors.password = "Password is required";
+    } else if (password.length < 8) {
+      newErrors.password = "Password must be at least 8 characters";
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const validateOtpLogin = () => {
+    const newErrors: Record<string, string> = {};
     const phoneRegex = /^[0-9]{10}$/;
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return phoneRegex.test(value) || emailRegex.test(value);
+    
+    if (!identifier.trim()) {
+      newErrors.identifier = "Please enter a mobile number or email";
+    } else if (!phoneRegex.test(identifier.trim()) && !emailRegex.test(identifier.trim())) {
+      newErrors.identifier = "Please enter a valid mobile number or email";
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handlePasswordLogin = () => {
+    if (validatePasswordLogin()) {
+      // Demo: Store user in localStorage and navigate to home
+      localStorage.setItem("parampare_user", JSON.stringify({
+        email: email,
+        fullName: email.split("@")[0], // Fallback name from email
+      }));
+      navigate("/");
+    }
   };
 
   const handleGetOTP = () => {
-    setError("");
-    if (!identifier.trim()) {
-      setError("Please enter a mobile number or email");
-      return;
+    if (validateOtpLogin()) {
+      navigate("/verify-otp", { 
+        state: { 
+          identifier: identifier.trim(), 
+          isLogin: true,
+          returnTo: "/" 
+        } 
+      });
     }
-    if (!validateInput(identifier.trim())) {
-      setError("Please enter a valid mobile number or email");
-      return;
+  };
+
+  const handleInputChange = (field: string, value: string) => {
+    if (field === "email") setEmail(value);
+    else if (field === "password") setPassword(value);
+    else if (field === "identifier") setIdentifier(value);
+    
+    if (errors[field]) {
+      setErrors((prev) => ({ ...prev, [field]: "" }));
     }
-    navigate("/verify-otp", { 
-      state: { 
-        identifier: identifier.trim(), 
-        isLogin: true,
-        returnTo: "/" 
-      } 
-    });
+  };
+
+  const switchMode = (mode: LoginMode) => {
+    setLoginMode(mode);
+    setErrors({});
   };
 
   return (
@@ -121,52 +175,166 @@ const Login = () => {
                 <h2 className="text-2xl font-display font-semibold text-foreground">
                   Login
                 </h2>
-              </div>
-
-              {/* Login Form */}
-              <div className="space-y-5">
-                <div className="relative">
-                  <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                    <Phone className="h-5 w-5" />
-                  </div>
-                  <Input
-                    id="identifier"
-                    type="text"
-                    placeholder="Enter mobile number or email"
-                    value={identifier}
-                    onChange={(e) => {
-                      setIdentifier(e.target.value);
-                      setError("");
-                    }}
-                    className={`h-12 pl-10 ${error ? "border-destructive" : ""}`}
-                  />
-                </div>
-                {error && (
-                  <p className="text-destructive text-sm">{error}</p>
-                )}
-
-                <Button 
-                  onClick={handleGetOTP}
-                  className="w-full h-12 bg-maroon hover:bg-maroon-dark text-white font-medium"
-                >
-                  Get OTP
-                </Button>
-
-                {/* Helper Links */}
-                <div className="flex justify-center text-sm">
-                  <Link to="/register" className="text-gold hover:underline font-medium">
-                    New user? Register
-                  </Link>
-                </div>
-
-                {/* Terms */}
-                <p className="text-xs text-center text-muted-foreground pt-2">
-                  By continuing, you agree to Parampare's{" "}
-                  <Link to="/terms-of-use" className="text-gold hover:underline">Terms of Service</Link>
-                  {" "}and{" "}
-                  <Link to="/privacy-policy" className="text-gold hover:underline">Privacy Policy</Link>
+                <p className="text-muted-foreground text-sm mt-1">
+                  {loginMode === "password" ? "Sign in with your credentials" : "Sign in with OTP"}
                 </p>
               </div>
+
+              {loginMode === "password" ? (
+                /* Password Login Form */
+                <div className="space-y-5">
+                  <div>
+                    <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">
+                      Email
+                    </label>
+                    <div className="relative">
+                      <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                        <Mail className="h-5 w-5" />
+                      </div>
+                      <Input
+                        id="email"
+                        type="email"
+                        placeholder="Enter your email"
+                        value={email}
+                        onChange={(e) => handleInputChange("email", e.target.value)}
+                        className={`h-12 pl-10 ${errors.email ? "border-destructive" : ""}`}
+                      />
+                    </div>
+                    {errors.email && (
+                      <p className="text-destructive text-sm mt-1">{errors.email}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label htmlFor="password" className="block text-sm font-medium text-foreground mb-2">
+                      Password
+                    </label>
+                    <div className="relative">
+                      <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                        <Lock className="h-5 w-5" />
+                      </div>
+                      <Input
+                        id="password"
+                        type={showPassword ? "text" : "password"}
+                        placeholder="Enter your password"
+                        value={password}
+                        onChange={(e) => handleInputChange("password", e.target.value)}
+                        className={`h-12 pl-10 pr-10 ${errors.password ? "border-destructive" : ""}`}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                      >
+                        {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                      </button>
+                    </div>
+                    {errors.password && (
+                      <p className="text-destructive text-sm mt-1">{errors.password}</p>
+                    )}
+                  </div>
+
+                  <div className="flex justify-end">
+                    <Link to="/forgot-password" className="text-sm text-gold hover:underline">
+                      Forgot Password?
+                    </Link>
+                  </div>
+
+                  <Button 
+                    onClick={handlePasswordLogin}
+                    className="w-full h-12 bg-maroon hover:bg-maroon-dark text-white font-medium"
+                  >
+                    Login
+                  </Button>
+
+                  {/* OR Separator */}
+                  <div className="relative flex items-center justify-center">
+                    <div className="absolute inset-0 flex items-center">
+                      <div className="w-full border-t border-border"></div>
+                    </div>
+                    <div className="relative bg-card px-4">
+                      <span className="text-sm text-muted-foreground">OR</span>
+                    </div>
+                  </div>
+
+                  {/* OTP Alternative */}
+                  <Button 
+                    variant="outline"
+                    onClick={() => switchMode("otp")}
+                    className="w-full h-12 gap-2"
+                  >
+                    <Phone className="h-4 w-4" />
+                    Login with OTP
+                  </Button>
+                </div>
+              ) : (
+                /* OTP Login Form */
+                <div className="space-y-5">
+                  <div>
+                    <label htmlFor="identifier" className="block text-sm font-medium text-foreground mb-2">
+                      Mobile Number or Email
+                    </label>
+                    <div className="relative">
+                      <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                        <Phone className="h-5 w-5" />
+                      </div>
+                      <Input
+                        id="identifier"
+                        type="text"
+                        placeholder="Enter mobile number or email"
+                        value={identifier}
+                        onChange={(e) => handleInputChange("identifier", e.target.value)}
+                        className={`h-12 pl-10 ${errors.identifier ? "border-destructive" : ""}`}
+                      />
+                    </div>
+                    {errors.identifier && (
+                      <p className="text-destructive text-sm mt-1">{errors.identifier}</p>
+                    )}
+                  </div>
+
+                  <Button 
+                    onClick={handleGetOTP}
+                    className="w-full h-12 bg-maroon hover:bg-maroon-dark text-white font-medium"
+                  >
+                    Get OTP
+                  </Button>
+
+                  {/* OR Separator */}
+                  <div className="relative flex items-center justify-center">
+                    <div className="absolute inset-0 flex items-center">
+                      <div className="w-full border-t border-border"></div>
+                    </div>
+                    <div className="relative bg-card px-4">
+                      <span className="text-sm text-muted-foreground">OR</span>
+                    </div>
+                  </div>
+
+                  {/* Password Alternative */}
+                  <Button 
+                    variant="outline"
+                    onClick={() => switchMode("password")}
+                    className="w-full h-12 gap-2"
+                  >
+                    <Lock className="h-4 w-4" />
+                    Login with Password
+                  </Button>
+                </div>
+              )}
+
+              {/* Helper Links */}
+              <div className="flex justify-center text-sm mt-6">
+                <Link to="/register" className="text-gold hover:underline font-medium">
+                  New user? Register
+                </Link>
+              </div>
+
+              {/* Terms */}
+              <p className="text-xs text-center text-muted-foreground pt-4">
+                By continuing, you agree to Parampare's{" "}
+                <Link to="/terms-of-use" className="text-gold hover:underline">Terms of Service</Link>
+                {" "}and{" "}
+                <Link to="/privacy-policy" className="text-gold hover:underline">Privacy Policy</Link>
+              </p>
             </div>
           </div>
         </div>

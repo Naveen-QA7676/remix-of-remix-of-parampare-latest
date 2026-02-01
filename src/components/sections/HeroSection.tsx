@@ -2,18 +2,36 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
 import heroBanner from "@/assets/hero-banner.jpg";
+import heroVideo from "@/assets/hero-video.mp4";
+import { useState } from "react";
 
 const HeroSection = () => {
+  const [videoError, setVideoError] = useState(false);
+
   return (
     <section className="relative min-h-[70vh] md:min-h-[90vh] overflow-hidden bg-secondary">
-      {/* Background Image with Parallax Effect */}
-      <div 
-        className="absolute inset-0 bg-cover bg-center transition-transform duration-[20s]"
-        style={{ backgroundImage: `url(${heroBanner})` }}
-      >
-        <div className="absolute inset-0 bg-gradient-to-r from-background via-background/70 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-t from-background/50 to-transparent" />
-      </div>
+      {/* Background Video with Fallback to Image */}
+      {!videoError ? (
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="absolute inset-0 w-full h-full object-cover"
+          onError={() => setVideoError(true)}
+        >
+          <source src={heroVideo} type="video/mp4" />
+        </video>
+      ) : (
+        <div 
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: `url(${heroBanner})` }}
+        />
+      )}
+      
+      {/* Gradient Overlays for text readability */}
+      <div className="absolute inset-0 bg-gradient-to-r from-background via-background/80 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-t from-background/60 to-transparent" />
 
       {/* Modern Decorative Elements - Glassmorphism */}
       <div className="absolute top-32 right-24 w-64 h-64 bg-gradient-to-br from-gold/20 to-transparent rounded-full blur-3xl animate-float" />

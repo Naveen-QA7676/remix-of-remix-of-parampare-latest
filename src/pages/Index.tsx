@@ -10,6 +10,7 @@ import CuratedCollection from "@/components/sections/CuratedCollection";
 import WhyChooseUs from "@/components/sections/WhyChooseUs";
 import Testimonials from "@/components/sections/Testimonials";
 import Footer from "@/components/layout/Footer";
+import BackToTop from "@/components/layout/BackToTop";
 
 const Index = () => {
   return (
@@ -28,6 +29,7 @@ const Index = () => {
         <Testimonials />
       </main>
       <Footer />
+      <BackToTop />
     </div>
   );
 };

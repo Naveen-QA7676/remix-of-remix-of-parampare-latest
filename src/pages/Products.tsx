@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { Heart, Star, Filter, ChevronDown, X } from "lucide-react";
+import { Heart, Star, Filter, X, PackageX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -33,6 +33,15 @@ interface Product {
   reviews: number;
   badge?: "Best Seller" | "New Arrival" | "GI Certified";
   inStock: boolean;
+  // Filter attributes
+  fabric?: string;
+  color?: string;
+  occasion?: string;
+  weave?: string;
+  border?: string;
+  pallu?: string;
+  blouse?: string;
+  createdAt?: string;
 }
 
 const sortOptions = [
@@ -46,6 +55,156 @@ const sortOptions = [
   { label: "Discount: High to Low", value: "discount-desc" },
 ];
 
+// Sample products data with filter attributes
+const allProducts: Product[] = [
+  {
+    id: "1",
+    name: "Ilkal Saree – Teni Pallu Red",
+    image: "/placeholder.svg",
+    price: 2999,
+    originalPrice: 4499,
+    rating: 4.6,
+    reviews: 128,
+    badge: "Best Seller",
+    inStock: true,
+    fabric: "pure-cotton",
+    color: "red",
+    occasion: "festive",
+    weave: "ilkal-traditional",
+    border: "zari",
+    pallu: "tope-teni",
+    blouse: "running",
+    createdAt: "2025-01-15",
+  },
+  {
+    id: "2",
+    name: "Traditional Kasuti Work Saree",
+    image: "/placeholder.svg",
+    price: 3499,
+    originalPrice: 5999,
+    rating: 4.8,
+    reviews: 89,
+    badge: "GI Certified",
+    inStock: true,
+    fabric: "cotton-silk",
+    color: "green",
+    occasion: "wedding",
+    weave: "handloom",
+    border: "temple",
+    pallu: "zari",
+    blouse: "contrast",
+    createdAt: "2025-01-10",
+  },
+  {
+    id: "3",
+    name: "Handwoven Silk Ilkal Saree",
+    image: "/placeholder.svg",
+    price: 4299,
+    rating: 4.5,
+    reviews: 56,
+    badge: "New Arrival",
+    inStock: true,
+    fabric: "pure-silk",
+    color: "maroon",
+    occasion: "wedding",
+    weave: "zari-border",
+    border: "broad",
+    pallu: "heavy",
+    blouse: "attached",
+    createdAt: "2025-01-20",
+  },
+  {
+    id: "4",
+    name: "Cotton Ilkal Saree – Blue",
+    image: "/placeholder.svg",
+    price: 1999,
+    originalPrice: 2999,
+    rating: 4.4,
+    reviews: 234,
+    inStock: true,
+    fabric: "pure-cotton",
+    color: "blue",
+    occasion: "daily",
+    weave: "ilkal-traditional",
+    border: "self",
+    pallu: "simple",
+    blouse: "running",
+    createdAt: "2024-12-01",
+  },
+  {
+    id: "5",
+    name: "Festive Maroon Ilkal Saree",
+    image: "/placeholder.svg",
+    price: 3799,
+    originalPrice: 5499,
+    rating: 4.7,
+    reviews: 167,
+    badge: "Best Seller",
+    inStock: true,
+    fabric: "silk-blend",
+    color: "maroon",
+    occasion: "festive",
+    weave: "tope-teni",
+    border: "contrast",
+    pallu: "tope-teni",
+    blouse: "contrast",
+    createdAt: "2025-01-05",
+  },
+  {
+    id: "6",
+    name: "Pure Silk Teni Border Saree",
+    image: "/placeholder.svg",
+    price: 5499,
+    rating: 4.9,
+    reviews: 45,
+    badge: "GI Certified",
+    inStock: false,
+    fabric: "pure-silk",
+    color: "yellow",
+    occasion: "wedding",
+    weave: "zari-border",
+    border: "zari",
+    pallu: "heavy",
+    blouse: "attached",
+    createdAt: "2025-01-18",
+  },
+  {
+    id: "7",
+    name: "Daily Wear Cotton Saree",
+    image: "/placeholder.svg",
+    price: 1499,
+    originalPrice: 1999,
+    rating: 4.2,
+    reviews: 312,
+    inStock: true,
+    fabric: "pure-cotton",
+    color: "white",
+    occasion: "daily",
+    weave: "handloom",
+    border: "self",
+    pallu: "simple",
+    blouse: "running",
+    createdAt: "2024-11-15",
+  },
+  {
+    id: "8",
+    name: "Office Wear Art Silk Saree",
+    image: "/placeholder.svg",
+    price: 2499,
+    rating: 4.3,
+    reviews: 98,
+    inStock: true,
+    fabric: "art-silk",
+    color: "blue",
+    occasion: "office",
+    weave: "jacquard",
+    border: "contrast",
+    pallu: "simple",
+    blouse: "running",
+    createdAt: "2024-12-20",
+  },
+];
+
 const Products = () => {
   const [searchParams] = useSearchParams();
   const category = searchParams.get("category") || "All Sarees";
@@ -56,72 +215,72 @@ const Products = () => {
   const { isInWishlist, toggleWishlist } = useWishlist();
   const { toast } = useToast();
 
-  // Sample products data
-  const products: Product[] = [
-    {
-      id: "1",
-      name: "Ilkal Saree – Teni Pallu Red",
-      image: "/placeholder.svg",
-      price: 2999,
-      originalPrice: 4499,
-      rating: 4.6,
-      reviews: 128,
-      badge: "Best Seller",
-      inStock: true,
-    },
-    {
-      id: "2",
-      name: "Traditional Kasuti Work Saree",
-      image: "/placeholder.svg",
-      price: 3499,
-      originalPrice: 5999,
-      rating: 4.8,
-      reviews: 89,
-      badge: "GI Certified",
-      inStock: true,
-    },
-    {
-      id: "3",
-      name: "Handwoven Silk Ilkal Saree",
-      image: "/placeholder.svg",
-      price: 4299,
-      rating: 4.5,
-      reviews: 56,
-      badge: "New Arrival",
-      inStock: true,
-    },
-    {
-      id: "4",
-      name: "Cotton Ilkal Saree – Blue",
-      image: "/placeholder.svg",
-      price: 1999,
-      originalPrice: 2999,
-      rating: 4.4,
-      reviews: 234,
-      inStock: true,
-    },
-    {
-      id: "5",
-      name: "Festive Maroon Ilkal Saree",
-      image: "/placeholder.svg",
-      price: 3799,
-      originalPrice: 5499,
-      rating: 4.7,
-      reviews: 167,
-      badge: "Best Seller",
-      inStock: true,
-    },
-    {
-      id: "6",
-      name: "Pure Silk Teni Border Saree",
-      image: "/placeholder.svg",
-      price: 5499,
-      rating: 4.9,
-      reviews: 45,
-      badge: "GI Certified",
-      inStock: false,
-    },
-  ];
+  // Calculate discount percentage for a product
+  const getDiscount = (product: Product) => {
+    if (!product.originalPrice) return 0;
+    return Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100);
+  };
+
+  // Filter and sort products using useMemo
+  const filteredAndSortedProducts = useMemo(() => {
+    let result = [...allProducts];
+
+    // Apply price filter
+    result = result.filter(
+      (product) => product.price >= priceRange[0] && product.price <= priceRange[1]
+    );
+
+    // Apply category filters
+    Object.entries(selectedFilters).forEach(([key, values]) => {
+      if (values.length > 0) {
+        if (key === "discount") {
+          // Handle discount filter specially
+          const minDiscount = Math.max(...values.map((v) => parseInt(v)));
+          result = result.filter((product) => getDiscount(product) >= minDiscount);
+        } else {
+          // Standard filter - match any of the selected values
+          result = result.filter((product) => {
+            const productValue = product[key as keyof Product] as string | undefined;
+            return productValue && values.includes(productValue);
+          });
+        }
+      }
+    });
+
+    // Apply sorting
+    switch (sortBy) {
+      case "price-asc":
+        result.sort((a, b) => a.price - b.price);
+        break;
+      case "price-desc":
+        result.sort((a, b) => b.price - a.price);
+        break;
+      case "rating":
+        result.sort((a, b) => b.rating - a.rating);
+        break;
+      case "new":
+        result.sort((a, b) => {
+          const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+          const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+          return dateB - dateA;
+        });
+        break;
+      case "popularity":
+        result.sort((a, b) => b.reviews - a.reviews);
+        break;
+      case "discount-asc":
+        result.sort((a, b) => getDiscount(a) - getDiscount(b));
+        break;
+      case "discount-desc":
+        result.sort((a, b) => getDiscount(b) - getDiscount(a));
+        break;
+      default:
+        // relevance - keep original order
+        break;
+    }
+
+    return result;
+  }, [selectedFilters, priceRange, sortBy]);
 
   const handleFilterChange = (key: string, value: string, checked: boolean) => {
     setSelectedFilters((prev) => {
@@ -143,7 +302,7 @@ const Products = () => {
     setMobileFilterOpen(false);
     toast({
       title: "Filters Applied",
-      description: "Product list updated with your filters.",
+      description: `Showing ${filteredAndSortedProducts.length} products`,
     });
   };
 
@@ -185,6 +344,8 @@ const Products = () => {
   const activeFilters = Object.entries(selectedFilters).flatMap(([key, values]) =>
     values.map((value) => ({ key, value, label: `${key}: ${value}` }))
   );
+
+  const hasActiveFilters = activeFilters.length > 0 || priceRange[0] !== 0 || priceRange[1] !== 20000;
 
   return (
     <div className="min-h-screen bg-background font-body">
@@ -257,7 +418,7 @@ const Products = () => {
                 </Sheet>
 
                 <p className="text-sm text-muted-foreground">
-                  Showing {products.length} of {products.length} sarees
+                  Showing {filteredAndSortedProducts.length} of {allProducts.length} sarees
                 </p>
               </div>
 
@@ -306,98 +467,111 @@ const Products = () => {
               </div>
             )}
 
-            {/* Product Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
-              {products.map((product) => (
-                <div
-                  key={product.id}
-                  className="group bg-card rounded-xl overflow-hidden border border-border/50 shadow-soft hover:shadow-elevated transition-all duration-300"
-                >
-                  {/* Product Image */}
-                  <div className="relative aspect-[3/4] overflow-hidden bg-secondary">
-                    <Link to={`/product/${product.id}`}>
-                      <img
-                        src={product.image}
-                        alt={product.name}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                      />
-                    </Link>
+            {/* Empty State */}
+            {filteredAndSortedProducts.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16 text-center">
+                <div className="w-24 h-24 rounded-full bg-muted flex items-center justify-center mb-6">
+                  <PackageX className="h-12 w-12 text-muted-foreground" />
+                </div>
+                <h3 className="text-xl font-display font-medium text-foreground mb-2">
+                  No products found
+                </h3>
+                <p className="text-muted-foreground mb-6 max-w-sm">
+                  We couldn't find any products matching your filters. Try adjusting your filters or browse all products.
+                </p>
+                <Button onClick={handleClearAll} className="bg-gold hover:bg-gold/90 text-foreground">
+                  Clear All Filters
+                </Button>
+              </div>
+            ) : (
+              /* Product Grid */
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
+                {filteredAndSortedProducts.map((product) => (
+                  <div
+                    key={product.id}
+                    className="group bg-card rounded-xl overflow-hidden border border-border/50 shadow-soft hover:shadow-elevated transition-all duration-300"
+                  >
+                    {/* Product Image */}
+                    <div className="relative aspect-[3/4] overflow-hidden bg-secondary">
+                      <Link to={`/product/${product.id}`}>
+                        <img
+                          src={product.image}
+                          alt={product.name}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
+                      </Link>
 
-                    {/* Badge */}
-                    {product.badge && (
-                      <Badge
-                        className={`absolute top-3 left-3 ${getBadgeColor(product.badge)}`}
+                      {/* Badge */}
+                      {product.badge && (
+                        <Badge
+                          className={`absolute top-3 left-3 ${getBadgeColor(product.badge)}`}
+                        >
+                          {product.badge}
+                        </Badge>
+                      )}
+
+                      {/* Wishlist Button */}
+                      <button
+                        onClick={() => handleWishlistClick(product)}
+                        className="absolute top-3 right-3 w-9 h-9 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-md hover:bg-white transition-colors"
                       >
-                        {product.badge}
-                      </Badge>
-                    )}
+                        <Heart
+                          className={`h-5 w-5 transition-all ${
+                            isInWishlist(product.id)
+                              ? "fill-destructive text-destructive"
+                              : "text-foreground/70"
+                          }`}
+                        />
+                      </button>
 
-                    {/* Wishlist Button */}
-                    <button
-                      onClick={() => handleWishlistClick(product)}
-                      className="absolute top-3 right-3 w-9 h-9 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-md hover:bg-white transition-colors"
-                    >
-                      <Heart
-                        className={`h-5 w-5 transition-all ${
-                          isInWishlist(product.id)
-                            ? "fill-destructive text-destructive"
-                            : "text-foreground/70"
-                        }`}
-                      />
-                    </button>
-
-                    {/* Out of Stock Overlay */}
-                    {!product.inStock && (
-                      <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                        <span className="text-white font-medium px-4 py-2 bg-black/70 rounded-lg">
-                          Out of Stock
-                        </span>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Product Info */}
-                  <div className="p-4">
-                    <Link to={`/product/${product.id}`}>
-                      <h3 className="font-medium text-foreground mb-2 line-clamp-2 group-hover:text-gold transition-colors">
-                        {product.name}
-                      </h3>
-                    </Link>
-
-                    {/* Rating */}
-                    <div className="flex items-center gap-1 mb-2">
-                      <Star className="h-4 w-4 fill-gold text-gold" />
-                      <span className="text-sm font-medium">{product.rating}</span>
-                      <span className="text-xs text-muted-foreground">
-                        ({product.reviews})
-                      </span>
-                    </div>
-
-                    {/* Price */}
-                    <div className="flex items-center gap-2">
-                      <span className="text-lg font-semibold text-foreground">
-                        ₹{product.price.toLocaleString()}
-                      </span>
-                      {product.originalPrice && (
-                        <>
-                          <span className="text-sm text-muted-foreground line-through">
-                            ₹{product.originalPrice.toLocaleString()}
+                      {/* Out of Stock Overlay */}
+                      {!product.inStock && (
+                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                          <span className="text-white font-medium px-4 py-2 bg-black/70 rounded-lg">
+                            Out of Stock
                           </span>
-                          <span className="text-xs text-green-600 font-medium">
-                            {Math.round(
-                              ((product.originalPrice - product.price) /
-                                product.originalPrice) *
-                                100
-                            )}
-                            % off
-                          </span>
-                        </>
+                        </div>
                       )}
                     </div>
+
+                    {/* Product Info */}
+                    <div className="p-4">
+                      <Link to={`/product/${product.id}`}>
+                        <h3 className="font-medium text-foreground mb-2 line-clamp-2 group-hover:text-gold transition-colors">
+                          {product.name}
+                        </h3>
+                      </Link>
+
+                      {/* Rating */}
+                      <div className="flex items-center gap-1 mb-2">
+                        <Star className="h-4 w-4 fill-gold text-gold" />
+                        <span className="text-sm font-medium">{product.rating}</span>
+                        <span className="text-xs text-muted-foreground">
+                          ({product.reviews})
+                        </span>
+                      </div>
+
+                      {/* Price */}
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg font-semibold text-foreground">
+                          ₹{product.price.toLocaleString()}
+                        </span>
+                        {product.originalPrice && (
+                          <>
+                            <span className="text-sm text-muted-foreground line-through">
+                              ₹{product.originalPrice.toLocaleString()}
+                            </span>
+                            <span className="text-xs text-green-600 font-medium">
+                              {getDiscount(product)}% off
+                            </span>
+                          </>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </main>
