@@ -279,14 +279,20 @@ const Register = () => {
                   <label htmlFor="mobile" className="block text-sm font-medium text-foreground mb-2">
                     Mobile Number <span className="text-destructive">*</span>
                   </label>
-                  <Input
-                    id="mobile"
-                    type="tel"
-                    placeholder="Enter your 10-digit mobile number"
-                    value={formData.mobile}
-                    onChange={(e) => handleChange("mobile", e.target.value.replace(/\D/g, "").slice(0, 10))}
-                    className={`h-12 ${errors.mobile ? "border-destructive" : ""}`}
-                  />
+                  <div className="relative">
+                    <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center gap-1 text-muted-foreground border-r border-border pr-2 mr-2">
+                       <span className="text-lg">🇮🇳</span>
+                       <span className="text-sm font-medium text-foreground">+91</span>
+                    </div>
+                    <Input
+                      id="mobile"
+                      type="tel"
+                      placeholder="Enter 10-digit mobile number"
+                      value={formData.mobile}
+                      onChange={(e) => handleChange("mobile", e.target.value.replace(/\D/g, "").slice(0, 10))}
+                      className={`h-12 pl-24 ${errors.mobile ? "border-destructive" : ""}`}
+                    />
+                  </div>
                   {errors.mobile && (
                     <p className="text-destructive text-sm mt-1">{errors.mobile}</p>
                   )}

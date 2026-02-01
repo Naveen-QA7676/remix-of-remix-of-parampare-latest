@@ -158,8 +158,9 @@ const SwitchAccount = () => {
                   <div>
                     <label className="text-sm font-medium">Mobile Number</label>
                     <div className="relative mt-1">
-                      <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                        <Phone className="h-5 w-5" />
+                      <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center gap-1 text-muted-foreground border-r border-border pr-2 mr-2">
+                         <span className="text-lg">🇮🇳</span>
+                         <span className="text-sm font-medium text-foreground">+91</span>
                       </div>
                       <Input
                         type="tel"
@@ -169,7 +170,7 @@ const SwitchAccount = () => {
                           setError("");
                         }}
                         placeholder="Enter 10-digit mobile number"
-                        className={`pl-10 h-12 ${error ? "border-destructive" : ""}`}
+                        className={`pl-24 h-12 ${error ? "border-destructive" : ""}`}
                         maxLength={10}
                       />
                     </div>
