@@ -2,7 +2,8 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Home, Eye, EyeOff, Check, X } from "lucide-react";
+import { Home, Eye, EyeOff, Check, X, Loader2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 const passwordRules = [
   { rule: /.{8,}/, message: "At least 8 characters" },
@@ -24,7 +25,11 @@ const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [passwordFocused, setPasswordFocused] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const { toast } = useToast();
+
+  const API_URL = import.meta.env.VITE_API_URL || "https://paramparebackend.vercel.app";
 
   const getPasswordValidation = (password: string) => {
     return passwordRules.map((rule) => ({
@@ -72,22 +77,83 @@ const Register = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleRegister = () => {
+  const handleRegister = async () => {
     if (validateForm()) {
-      // Store user data in localStorage for demo purposes
-      localStorage.setItem("parampare_user", JSON.stringify({
-        fullName: formData.fullName,
-        email: formData.email,
-        mobile: formData.mobile,
-      }));
-      navigate("/verify-otp", { 
-        state: { 
-          identifier: formData.mobile, 
-          isLogin: false,
-          userData: formData,
-          returnTo: "/" 
-        } 
-      });
+      setIsLoading(true);
+      try {
+        const payload = {
+          fullName: formData.fullName,
+          email: formData.email,
+          password: formData.password,
+          mobile: formData.mobile,
+          countryCode: "+91",
+          confirmPassword: formData.confirmPassword
+        };
+
+        const response = await fetch(`${API_URL}/api/auth/register`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message || "Registration failed");
+        }
+
+        toast({
+          title: "Registration Successful",
+          description: "Sending OTP...",
+        });
+
+        // Send OTP
+        const otpResponse = await fetch(`${API_URL}/api/auth/send-otp`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            mobile: formData.mobile,
+            type: "register"
+          }),
+        });
+
+        if (!otpResponse.ok) {
+           console.error("Failed to send OTP");
+           toast({
+             title: "Warning",
+             description: "Account created but failed to send OTP. You may need to resend it.",
+             variant: "destructive"
+           });
+        } else {
+           toast({
+             title: "OTP Sent",
+             description: "Please check your mobile number.",
+           });
+        }
+
+        // Store user data context for OTP verification if needed
+        navigate("/verify-otp", { 
+          state: { 
+            identifier: formData.mobile, 
+            isLogin: false,
+            userData: formData,
+            apiResponse: data, // Pass registration data
+            returnTo: "/" 
+          } 
+        });
+      } catch (error: any) {
+        toast({
+          title: "Registration Failed",
+          description: error.message || "Something went wrong. Please try again.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -324,9 +390,16 @@ const Register = () => {
                 <Button 
                   onClick={handleRegister}
                   className="w-full h-12 bg-gold hover:bg-gold/90 text-foreground font-medium"
-                  disabled={!isPasswordValid(formData.password) || formData.password !== formData.confirmPassword}
+                  disabled={!isPasswordValid(formData.password) || formData.password !== formData.confirmPassword || isLoading}
                 >
-                  Create Account
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Creating Account...
+                    </>
+                  ) : (
+                    "Create Account"
+                  )}
                 </Button>
 
                 {/* Helper Links */}

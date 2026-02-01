@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Phone, Home, Eye, EyeOff, Mail, Lock } from "lucide-react";
+import { Phone, Home, Eye, EyeOff, Mail, Lock, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 type LoginMode = "password" | "otp";
@@ -13,12 +13,14 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [phone, setPhone] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
 
   const returnTo = location.state?.returnTo || "/";
+  const API_URL = import.meta.env.VITE_API_URL || "https://paramparebackend.vercel.app";
 
   const validatePasswordLogin = () => {
     const newErrors: Record<string, string> = {};
@@ -54,35 +56,125 @@ const Login = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handlePasswordLogin = () => {
+  const handlePasswordLogin = async () => {
     if (validatePasswordLogin()) {
-      // Store user in localStorage and navigate
-      const userData = {
-        email: email,
-        fullName: email.split("@")[0],
-        phone: "1234567890",
-      };
-      localStorage.setItem("parampare_user", JSON.stringify(userData));
-      localStorage.setItem("isLoggedIn", "true");
-      
-      toast({
-        title: "Login Successful!",
-        description: "Welcome to Parampare",
-      });
-      
-      navigate(returnTo);
+      setIsLoading(true);
+      try {
+        // 1. Password Login
+        const response = await fetch(`${API_URL}/api/auth/login`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: email,
+            password: password,
+          }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message || "Login failed");
+        }
+
+        // Store token
+        const token = data.token;
+        localStorage.setItem("auth_token", token);
+        localStorage.setItem("isLoggedIn", "true");
+
+        // 2. Fetch User Details
+        const userDetailsResponse = await fetch(`${API_URL}/api/auth/userDetails`, {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${token}`, // Assuming Bearer token
+          },
+        });
+
+        if (userDetailsResponse.ok) {
+           const responseJson = await userDetailsResponse.json();
+           const userData = responseJson.data || responseJson; // Handle wrapped or unwrapped data
+           
+           // Store user details (ensure consistency with what app expects)
+           const userToStore = {
+             email: userData.email,
+             fullName: userData.fullName || userData.name, 
+             phone: userData.mobile || userData.phone || "",
+             countryCode: userData.countryCode,
+             _id: userData._id || userData.id,
+             role: userData.role,
+             ...userData
+           };
+           localStorage.setItem("parampare_user", JSON.stringify(userToStore));
+        } else {
+           // Fallback if details fetch fails but login succeeded (rare)
+           console.warn("Failed to fetch user details");
+           localStorage.setItem("parampare_user", JSON.stringify({ email })); 
+        }
+
+        toast({
+          title: "Login Successful!",
+          description: "Welcome back to Parampare",
+        });
+        
+        navigate("/");
+
+      } catch (error: any) {
+        toast({
+          title: "Login Failed",
+          description: error.message || "Invalid email or password",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
-  const handleGetOTP = () => {
+  const handleGetOTP = async () => {
     if (validateOtpLogin()) {
-      navigate("/verify-otp", { 
-        state: { 
-          identifier: phone.trim(), 
-          isLogin: true,
-          returnTo: returnTo 
-        } 
-      });
+      setIsLoading(true);
+      try {
+        const response = await fetch(`${API_URL}/api/auth/send-otp`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            mobile: phone,
+            type: "login"
+          }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message || "Failed to send OTP");
+        }
+
+        toast({
+          title: "OTP Sent",
+          description: "Please check your mobile number.",
+        });
+
+        navigate("/verify-otp", { 
+          state: { 
+            identifier: phone.trim(), 
+            isLogin: true,
+            apiResponse: data,
+            returnTo: returnTo 
+          } 
+        });
+
+      } catch (error: any) {
+        toast({
+          title: "Error",
+          description: error.message || "Something went wrong. Please try again.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -170,12 +262,7 @@ const Login = () => {
             </svg>
           </div>
 
-          {/* Dummy Credentials Info */}
-          <div className="mt-8 p-4 bg-white/10 rounded-lg text-center">
-            <p className="text-cream/80 text-xs mb-2">For Testing (OTP Login):</p>
-            <p className="text-cream text-sm font-mono">Mobile: 1234567890</p>
-            <p className="text-cream text-sm font-mono">OTP: 123456</p>
-          </div>
+
         </div>
 
         {/* Right Side - Login Form */}
@@ -263,8 +350,16 @@ const Login = () => {
                   <Button 
                     onClick={handlePasswordLogin}
                     className="w-full h-12 bg-maroon hover:bg-maroon-dark text-white font-medium"
+                    disabled={isLoading}
                   >
-                    Login
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Logging in...
+                      </>
+                    ) : (
+                      "Login"
+                    )}
                   </Button>
 
                   {/* OR Separator */}
@@ -311,16 +406,22 @@ const Login = () => {
                     {errors.phone && (
                       <p className="text-destructive text-sm mt-1">{errors.phone}</p>
                     )}
-                    <p className="text-xs text-muted-foreground mt-2">
-                      For testing: Use <span className="font-medium">1234567890</span>
-                    </p>
+
                   </div>
 
                   <Button 
                     onClick={handleGetOTP}
                     className="w-full h-12 bg-maroon hover:bg-maroon-dark text-white font-medium"
+                    disabled={isLoading}
                   >
-                    Get OTP
+                     {isLoading ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Sending OTP...
+                        </>
+                      ) : (
+                        "Get OTP"
+                      )}
                   </Button>
 
                   {/* OR Separator */}

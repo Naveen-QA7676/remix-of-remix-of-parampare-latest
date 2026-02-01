@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const VerifyOTP = () => {
@@ -11,12 +11,15 @@ const VerifyOTP = () => {
   const [canResend, setCanResend] = useState(false);
   const [attempts, setAttempts] = useState(0);
   const [isBlocked, setIsBlocked] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
 
-  const { identifier, isLogin, returnTo, userData } = location.state || {};
+  const { identifier, isLogin, returnTo, userData, apiResponse } = location.state || {};
+
+  const API_URL = import.meta.env.VITE_API_URL || "https://paramparebackend.vercel.app";
 
   useEffect(() => {
     if (!identifier) {
@@ -75,7 +78,7 @@ const VerifyOTP = () => {
     setOtp(newOtp);
   };
 
-  const handleVerify = () => {
+  const handleVerify = async () => {
     const otpValue = otp.join("");
     
     if (otpValue.length !== 6) {
@@ -83,44 +86,59 @@ const VerifyOTP = () => {
       return;
     }
 
-    // DUMMY AUTHENTICATION: Only accept specific credentials
-    // Mobile: 1234567890, OTP: 123456
-    if (identifier === "1234567890" && otpValue === "123456") {
+    setIsLoading(true);
+    try {
+      // Use API for verification
+      const response = await fetch(`${API_URL}/api/auth/verify-otp`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          otp: otpValue,
+          mobile: identifier,
+          userId: apiResponse?.userId || apiResponse?.user?.id || apiResponse?.data?.userId
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "OTP Verification failed");
+      }
+
       toast({
-        title: isLogin ? "Login Successful!" : "Registration Successful!",
+        title: "Verification Successful!",
         description: "Welcome to Parampare",
       });
       
       // Store user session
       localStorage.setItem("isLoggedIn", "true");
+      localStorage.setItem("parampare_user", JSON.stringify(data.user || userData)); // Prefer user data from API
+      localStorage.setItem("auth_token", data.token); // Store token if provided
       
-      const userToStore = userData || {
-        fullName: "Test User",
-        email: "testuser@parampare.com",
-        phone: identifier,
-      };
-      localStorage.setItem("parampare_user", JSON.stringify(userToStore));
-      
-      navigate(returnTo || "/");
-    } else {
-      const newAttempts = attempts + 1;
-      setAttempts(newAttempts);
-      
-      if (newAttempts >= 3) {
-        setIsBlocked(true);
-        setError("Too many attempts. Try again after 5 minutes.");
-        setTimeout(() => {
-          setIsBlocked(false);
-          setAttempts(0);
-        }, 300000); // 5 minutes
+      if (isLogin) {
+        navigate("/");
       } else {
-        // Helpful error message for testing
-        if (identifier !== "1234567890") {
-          setError("Invalid credentials. Use mobile: 1234567890 and OTP: 123456");
-        } else {
-          setError("Incorrect OTP. Use 123456 for testing.");
-        }
+        navigate(returnTo || "/");
       }
+
+    } catch (error: any) {
+      const newAttempts = attempts + 1;
+        setAttempts(newAttempts);
+        
+        if (newAttempts >= 3) {
+          setIsBlocked(true);
+          setError("Too many attempts. Try again after 5 minutes.");
+          setTimeout(() => {
+            setIsBlocked(false);
+            setAttempts(0);
+          }, 300000); // 5 minutes
+        } else {
+          setError(error.message || "Invalid OTP. Please try again.");
+        }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -183,13 +201,6 @@ const VerifyOTP = () => {
               </button>
             </div>
 
-            {/* Testing Info */}
-            <div className="bg-secondary/50 rounded-lg p-3 mb-6 text-center">
-              <p className="text-xs text-muted-foreground">
-                For testing: Use OTP <span className="font-mono font-medium text-foreground">123456</span>
-              </p>
-            </div>
-
             {/* OTP Input */}
             <div className="space-y-6">
               <div className="flex justify-center gap-3">
@@ -218,10 +229,17 @@ const VerifyOTP = () => {
 
               <Button 
                 onClick={handleVerify}
-                disabled={isBlocked}
+                disabled={isBlocked || isLoading}
                 className="w-full h-12 bg-gold hover:bg-gold/90 text-foreground font-medium disabled:opacity-50"
               >
-                {isLogin ? "Login" : "Verify & Continue"}
+                 {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Verifying...
+                    </>
+                  ) : (
+                    isLogin ? "Login" : "Verify & Continue"
+                  )}
               </Button>
 
               {/* Resend OTP */}

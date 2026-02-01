@@ -19,7 +19,7 @@ import {
 import { sareesCategories, dressMaterialsCategories, occasionsCategories } from "@/data/categories";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-import logoImage from "@/assets/logo.jpg";
+// import logoImage from "@/assets/logo.jpg";
 
 const MainHeader = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -111,6 +111,13 @@ const MainHeader = () => {
     setAccountHovered(false);
   };
 
+  const handleLogoClick = (e: React.MouseEvent) => {
+    if (location.pathname === "/") {
+      e.preventDefault();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
   const simpleMenuItems = [
     { label: "SALE", href: "/products?filter=sale", highlight: true },
     { label: "BESTSELLERS", href: "/#bestsellers", onClick: handleBestsellersClick },
@@ -132,11 +139,11 @@ const MainHeader = () => {
           </Button>
 
           {/* Logo - Image */}
-          <Link to="/" className="flex-shrink-0">
+          <Link to="/" className="flex-shrink-0" onClick={handleLogoClick}>
             <img 
-              src={logoImage} 
+              src="/kannada-logo.png" 
               alt="Parampare" 
-              className="h-10 md:h-12 w-auto object-contain"
+              className="h-6 md:h-8 w-auto object-contain"
             />
           </Link>
 
@@ -330,13 +337,15 @@ const MainHeader = () => {
                       <MapPin className="h-4 w-4" />
                       Your Addresses
                     </button>
-                    <button
-                      onClick={() => handleAccountAction("/switch-account")}
-                      className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-foreground hover:bg-secondary rounded-lg transition-colors"
-                    >
-                      <RefreshCw className="h-4 w-4" />
-                      Switch Account
-                    </button>
+                    {isLoggedIn && (
+                      <button
+                        onClick={() => handleAccountAction("/switch-account")}
+                        className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-foreground hover:bg-secondary rounded-lg transition-colors"
+                      >
+                        <RefreshCw className="h-4 w-4" />
+                        Switch Account
+                      </button>
+                    )}
                     
                     {isLoggedIn && (
                       <>

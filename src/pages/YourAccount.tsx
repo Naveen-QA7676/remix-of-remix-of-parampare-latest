@@ -41,14 +41,14 @@ const YourAccount = () => {
     if (storedUser) {
       const parsed = JSON.parse(storedUser);
       setUserData({
-        fullName: parsed.fullName || "Guest User",
+        fullName: parsed.fullName || parsed.name || "Guest User",
         email: parsed.email || "",
-        phone: parsed.phone || "1234567890",
+        phone: parsed.phone || parsed.mobile || "",
       });
       setEditData({
-        fullName: parsed.fullName || "Guest User",
+        fullName: parsed.fullName || parsed.name || "Guest User",
         email: parsed.email || "",
-        phone: parsed.phone || "1234567890",
+        phone: parsed.phone || parsed.mobile || "",
       });
     }
   }, [navigate]);

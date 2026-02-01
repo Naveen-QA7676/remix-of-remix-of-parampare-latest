@@ -15,18 +15,49 @@ const SwitchAccount = () => {
   const [phone, setPhone] = useState("");
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [otpResponseData, setOtpResponseData] = useState<any>(null);
 
-  const handleGetOTP = () => {
+  const API_URL = import.meta.env.VITE_API_URL || "https://paramparebackend.vercel.app";
+
+  const handleGetOTP = async () => {
     if (!/^[0-9]{10}$/.test(phone)) {
       setError("Please enter a valid 10-digit mobile number");
       return;
     }
     setError("");
-    setStep("otp");
-    toast({
-      title: "OTP Sent",
-      description: `OTP sent to +91 ${phone.slice(0, 2)}XXXXX${phone.slice(-3)}`,
-    });
+    setIsLoading(true);
+
+    try {
+      const response = await fetch(`${API_URL}/api/auth/send-otp`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          mobile: phone,
+          type: "login" 
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to send OTP");
+      }
+
+      setOtpResponseData(data);
+      setStep("otp");
+      toast({
+        title: "OTP Sent",
+        description: `OTP sent to +91 ${phone.slice(0, 2)}XXXXX${phone.slice(-3)}`,
+      });
+
+    } catch (error: any) {
+      setError(error.message || "Something went wrong. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleOtpChange = (index: number, value: string) => {
@@ -42,30 +73,56 @@ const SwitchAccount = () => {
     }
   };
 
-  const handleVerifyOTP = () => {
+  const handleVerifyOTP = async () => {
     const otpValue = otp.join("");
     if (otpValue.length !== 6) {
       setError("Please enter the complete 6-digit OTP");
       return;
     }
 
-    // Dummy validation: Accept "123456" as valid OTP for phone "1234567890"
-    if (phone === "1234567890" && otpValue === "123456") {
+    setIsLoading(true);
+    try {
+      const response = await fetch(`${API_URL}/api/auth/verify-otp`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          otp: otpValue,
+          mobile: phone,
+          userId: otpResponseData?.userId || otpResponseData?.user?.id || otpResponseData?.data?.userId
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Invalid OTP");
+      }
+
       // Switch account
-      const newUser = {
-        fullName: "Test User",
-        email: "testuser@parampare.com",
-        phone: phone,
+      const userData = data.user || data;
+      const userToStore = {
+         email: userData.email,
+         fullName: userData.fullName || userData.name || "User",
+         phone: userData.mobile || userData.phone || phone,
+         ...userData
       };
-      localStorage.setItem("parampare_user", JSON.stringify(newUser));
+
+      localStorage.setItem("parampare_user", JSON.stringify(userToStore));
+      localStorage.setItem("auth_token", data.token);
       localStorage.setItem("isLoggedIn", "true");
+      
       setStep("success");
       toast({
         title: "Account Switched Successfully",
         description: "Welcome back!",
       });
-    } else {
-      setError("Invalid OTP. Use mobile: 1234567890 and OTP: 123456 for testing.");
+
+    } catch (error: any) {
+      setError(error.message || "Verification failed. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -119,16 +176,15 @@ const SwitchAccount = () => {
                     {error && <p className="text-destructive text-sm mt-1">{error}</p>}
                   </div>
 
-                  <Button
-                    onClick={handleGetOTP}
-                    className="w-full h-12 bg-gold hover:bg-gold/90 text-foreground"
-                  >
-                    Get OTP
-                  </Button>
+                    <Button
+                      onClick={handleGetOTP}
+                      className="w-full h-12 bg-gold hover:bg-gold/90 text-foreground"
+                      disabled={isLoading}
+                    >
+                      {isLoading ? "Sending OTP..." : "Get OTP"}
+                    </Button>
 
-                  <p className="text-xs text-center text-muted-foreground mt-4">
-                    For testing, use mobile: <span className="font-medium">1234567890</span>
-                  </p>
+
                 </div>
               </>
             )}
@@ -172,13 +228,12 @@ const SwitchAccount = () => {
                   <Button
                     onClick={handleVerifyOTP}
                     className="w-full h-12 bg-gold hover:bg-gold/90 text-foreground"
+                    disabled={isLoading}
                   >
-                    Verify & Switch
+                    {isLoading ? "Verifying..." : "Verify & Switch"}
                   </Button>
 
-                  <p className="text-xs text-center text-muted-foreground">
-                    For testing, use OTP: <span className="font-medium">123456</span>
-                  </p>
+
                 </div>
               </>
             )}
@@ -192,7 +247,7 @@ const SwitchAccount = () => {
                   Account Switched!
                 </h1>
                 <p className="text-muted-foreground mb-6">
-                  You are now logged in as Test User
+                  You are now logged in as {JSON.parse(localStorage.getItem("parampare_user") || "{}").fullName}
                 </p>
                 <Button
                   onClick={handleContinue}
