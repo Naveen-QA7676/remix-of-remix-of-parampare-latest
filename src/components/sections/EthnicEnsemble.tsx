@@ -1,4 +1,5 @@
 import { ArrowRight } from "lucide-react";
+import { Link } from "react-router-dom";
 import saree1 from "@/assets/saree-1.jpg";
 import saree2 from "@/assets/saree-2.jpg";
 import saree3 from "@/assets/saree-3.jpg";
@@ -9,21 +10,21 @@ const ensembles = [
     description: "Timeless classics for pujas, festivals, and family gatherings",
     image: saree1,
     tag: "Heritage",
-    href: "#",
+    href: "/products?occasion=traditional&category=Traditional",
   },
   {
     title: "Contemporary Chic",
     description: "Modern silhouettes with ethnic soul for the new-age woman",
     image: saree2,
     tag: "Trending",
-    href: "#",
+    href: "/products?weave=jacquard&category=Contemporary",
   },
   {
     title: "Festive Grandeur",
     description: "Rich fabrics and vibrant hues for celebrations that shine",
     image: saree3,
     tag: "Limited",
-    href: "#",
+    href: "/products?occasion=festive&category=Festive",
   },
 ];
 
@@ -42,10 +43,10 @@ const EthnicEnsemble = () => {
 
         <div className="grid md:grid-cols-3 gap-6 md:gap-8">
           {ensembles.map((ensemble, index) => (
-            <a
+            <Link
               key={ensemble.title}
-              href={ensemble.href}
-              className="group bg-secondary rounded-2xl overflow-hidden card-hover opacity-0 animate-fade-in-up"
+              to={ensemble.href}
+              className="group bg-secondary rounded-2xl overflow-hidden card-hover opacity-0 animate-fade-in-up relative"
               style={{ animationDelay: `${0.2 + index * 0.15}s` }}
             >
               <div className="aspect-[4/3] overflow-hidden">
@@ -62,7 +63,7 @@ const EthnicEnsemble = () => {
                   <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-2" />
                 </div>
               </div>
-            </a>
+            </Link>
           ))}
         </div>
       </div>

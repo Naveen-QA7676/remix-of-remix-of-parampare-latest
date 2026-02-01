@@ -1,4 +1,5 @@
 import { ArrowRight, Sparkles } from "lucide-react";
+import { Link } from "react-router-dom";
 import saree1 from "@/assets/saree-1.jpg";
 import saree3 from "@/assets/saree-3.jpg";
 
@@ -7,14 +8,14 @@ const collections = [
     title: "Your Shaadi Wardrobe",
     description: "Curated wedding collections for your special day. From bridal reds to festive golds.",
     image: saree1,
-    link: "#",
+    link: "/products?occasion=wedding&category=Wedding Collection",
     badge: "Wedding Special",
   },
   {
     title: "Ethnic Ensemble",
     description: "Style-based collections for every occasion. Traditional meets contemporary.",
     image: saree3,
-    link: "#",
+    link: "/products?occasion=festive&category=Ethnic Collection",
     badge: "Trending",
   },
 ];
@@ -40,9 +41,9 @@ const CuratedCollection = () => {
 
         <div className="grid md:grid-cols-2 gap-6 md:gap-8">
           {collections.map((collection, index) => (
-            <a
+            <Link
               key={collection.title}
-              href={collection.link}
+              to={collection.link}
               className="group flex flex-col md:flex-row bg-card rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 opacity-0 animate-fade-in-up"
               style={{ animationDelay: `${0.3 + index * 0.2}s` }}
             >
@@ -73,7 +74,7 @@ const CuratedCollection = () => {
                   <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-2" />
                 </span>
               </div>
-            </a>
+            </Link>
           ))}
         </div>
       </div>

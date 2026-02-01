@@ -2,16 +2,40 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Home } from "lucide-react";
+import { Home, Eye, EyeOff, Check, X } from "lucide-react";
+
+const passwordRules = [
+  { rule: /.{8,}/, message: "At least 8 characters" },
+  { rule: /[A-Z]/, message: "At least one uppercase letter" },
+  { rule: /[a-z]/, message: "At least one lowercase letter" },
+  { rule: /[0-9]/, message: "At least one number" },
+  { rule: /[@$!%*?&#^()_+=\-\[\]{}|\\:;"'<>,.?/~`]/, message: "At least one special character" },
+];
 
 const Register = () => {
   const [formData, setFormData] = useState({
     fullName: "",
     mobile: "",
     email: "",
+    password: "",
+    confirmPassword: "",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [passwordFocused, setPasswordFocused] = useState(false);
   const navigate = useNavigate();
+
+  const getPasswordValidation = (password: string) => {
+    return passwordRules.map((rule) => ({
+      ...rule,
+      passed: rule.rule.test(password),
+    }));
+  };
+
+  const isPasswordValid = (password: string) => {
+    return passwordRules.every((rule) => rule.rule.test(password));
+  };
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -26,16 +50,36 @@ const Register = () => {
     }
     
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (formData.email && !emailRegex.test(formData.email)) {
+    if (!formData.email.trim()) {
+      newErrors.email = "Email is required";
+    } else if (!emailRegex.test(formData.email)) {
       newErrors.email = "Please enter a valid email address";
+    }
+
+    if (!formData.password) {
+      newErrors.password = "Password is required";
+    } else if (!isPasswordValid(formData.password)) {
+      newErrors.password = "Password does not meet all requirements";
+    }
+
+    if (!formData.confirmPassword) {
+      newErrors.confirmPassword = "Please confirm your password";
+    } else if (formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = "Passwords do not match";
     }
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleGetOTP = () => {
+  const handleRegister = () => {
     if (validateForm()) {
+      // Store user data in localStorage for demo purposes
+      localStorage.setItem("parampare_user", JSON.stringify({
+        fullName: formData.fullName,
+        email: formData.email,
+        mobile: formData.mobile,
+      }));
       navigate("/verify-otp", { 
         state: { 
           identifier: formData.mobile, 
@@ -53,6 +97,8 @@ const Register = () => {
       setErrors(prev => ({ ...prev, [field]: "" }));
     }
   };
+
+  const passwordValidation = getPasswordValidation(formData.password);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-muted/30 p-4">
@@ -134,7 +180,7 @@ const Register = () => {
             </Link>
           </div>
 
-          <div className="flex-1 flex items-center justify-center p-8">
+          <div className="flex-1 flex items-center justify-center p-8 overflow-y-auto">
             <div className="w-full max-w-sm">
               {/* Registration Header */}
               <div className="text-center mb-6">
@@ -148,7 +194,7 @@ const Register = () => {
               <div className="space-y-4">
                 <div>
                   <label htmlFor="fullName" className="block text-sm font-medium text-foreground mb-2">
-                    Full Name
+                    Full Name <span className="text-destructive">*</span>
                   </label>
                   <Input
                     id="fullName"
@@ -165,7 +211,7 @@ const Register = () => {
 
                 <div>
                   <label htmlFor="mobile" className="block text-sm font-medium text-foreground mb-2">
-                    Mobile Number
+                    Mobile Number <span className="text-destructive">*</span>
                   </label>
                   <Input
                     id="mobile"
@@ -182,7 +228,7 @@ const Register = () => {
 
                 <div>
                   <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">
-                    Email <span className="text-muted-foreground">(optional)</span>
+                    Email <span className="text-destructive">*</span>
                   </label>
                   <Input
                     id="email"
@@ -197,15 +243,90 @@ const Register = () => {
                   )}
                 </div>
 
-                <p className="text-sm text-muted-foreground">
-                  We'll send a one-time password (OTP) to verify you
-                </p>
+                <div>
+                  <label htmlFor="password" className="block text-sm font-medium text-foreground mb-2">
+                    Password <span className="text-destructive">*</span>
+                  </label>
+                  <div className="relative">
+                    <Input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Create a strong password"
+                      value={formData.password}
+                      onChange={(e) => handleChange("password", e.target.value)}
+                      onFocus={() => setPasswordFocused(true)}
+                      onBlur={() => setPasswordFocused(false)}
+                      className={`h-12 pr-10 ${errors.password ? "border-destructive" : ""}`}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    >
+                      {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                    </button>
+                  </div>
+                  {errors.password && (
+                    <p className="text-destructive text-sm mt-1">{errors.password}</p>
+                  )}
+                  
+                  {/* Password Strength Indicators */}
+                  {(passwordFocused || formData.password) && (
+                    <div className="mt-3 p-3 bg-muted/50 rounded-lg space-y-2">
+                      <p className="text-xs font-medium text-muted-foreground mb-2">Password must contain:</p>
+                      {passwordValidation.map((validation, index) => (
+                        <div key={index} className="flex items-center gap-2 text-xs">
+                          {validation.passed ? (
+                            <Check className="h-3.5 w-3.5 text-green-600" />
+                          ) : (
+                            <X className="h-3.5 w-3.5 text-muted-foreground" />
+                          )}
+                          <span className={validation.passed ? "text-green-600" : "text-muted-foreground"}>
+                            {validation.message}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div>
+                  <label htmlFor="confirmPassword" className="block text-sm font-medium text-foreground mb-2">
+                    Confirm Password <span className="text-destructive">*</span>
+                  </label>
+                  <div className="relative">
+                    <Input
+                      id="confirmPassword"
+                      type={showConfirmPassword ? "text" : "password"}
+                      placeholder="Re-enter your password"
+                      value={formData.confirmPassword}
+                      onChange={(e) => handleChange("confirmPassword", e.target.value)}
+                      className={`h-12 pr-10 ${errors.confirmPassword ? "border-destructive" : ""}`}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    >
+                      {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                    </button>
+                  </div>
+                  {errors.confirmPassword && (
+                    <p className="text-destructive text-sm mt-1">{errors.confirmPassword}</p>
+                  )}
+                  {formData.confirmPassword && formData.password === formData.confirmPassword && (
+                    <p className="text-green-600 text-sm mt-1 flex items-center gap-1">
+                      <Check className="h-4 w-4" /> Passwords match
+                    </p>
+                  )}
+                </div>
 
                 <Button 
-                  onClick={handleGetOTP}
+                  onClick={handleRegister}
                   className="w-full h-12 bg-gold hover:bg-gold/90 text-foreground font-medium"
+                  disabled={!isPasswordValid(formData.password) || formData.password !== formData.confirmPassword}
                 >
-                  Get OTP
+                  Create Account
                 </Button>
 
                 {/* Helper Links */}

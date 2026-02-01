@@ -1,4 +1,5 @@
 import { ArrowRight } from "lucide-react";
+import { Link } from "react-router-dom";
 import saree1 from "@/assets/saree-1.jpg";
 import saree2 from "@/assets/saree-2.jpg";
 import saree3 from "@/assets/saree-3.jpg";
@@ -9,25 +10,25 @@ const collections = [
     title: "Bridal Sarees",
     subtitle: "For the Big Day",
     image: saree1,
-    href: "#",
+    href: "/products?occasion=wedding&category=Bridal",
   },
   {
     title: "Mehendi Collection",
     subtitle: "Vibrant & Playful",
     image: saree2,
-    href: "#",
+    href: "/products?occasion=festive&category=Mehendi",
   },
   {
     title: "Sangeet Specials",
     subtitle: "Dance-Ready Drapes",
     image: saree3,
-    href: "#",
+    href: "/products?occasion=festive&category=Sangeet",
   },
   {
     title: "Reception Elegance",
     subtitle: "Grand Finales",
     image: saree4,
-    href: "#",
+    href: "/products?occasion=wedding&category=Reception",
   },
 ];
 
@@ -54,9 +55,9 @@ const ShaadiWardrobe = () => {
         {/* Modern Grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
           {collections.map((collection, index) => (
-            <a
+            <Link
               key={collection.title}
-              href={collection.href}
+              to={collection.href}
               className="group relative overflow-hidden rounded-2xl aspect-[3/4] card-hover opacity-0 animate-fade-in-up"
               style={{ animationDelay: `${0.2 + index * 0.1}s` }}
             >
@@ -82,7 +83,7 @@ const ShaadiWardrobe = () => {
                   <ArrowRight className="w-4 h-4" />
                 </div>
               </div>
-            </a>
+            </Link>
           ))}
         </div>
       </div>
