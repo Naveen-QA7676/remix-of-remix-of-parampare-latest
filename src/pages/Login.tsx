@@ -20,7 +20,7 @@ const Login = () => {
   const { toast } = useToast();
 
   const returnTo = location.state?.returnTo || "/";
-  const API_URL = import.meta.env.VITE_API_URL || "https://paramparebackend.vercel.app";
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
   const validatePasswordLogin = () => {
     const newErrors: Record<string, string> = {};
@@ -83,27 +83,25 @@ const Login = () => {
            throw new Error(data.message || "Login failed");
         }
 
-        // Store token
+        // Store token — key must match apiClient.ts interceptor
         const token = data.token;
-        localStorage.setItem("auth_token", token);
+        localStorage.setItem("token", token);
         localStorage.setItem("isLoggedIn", "true");
 
         // 2. Fetch User Details
         const userDetailsResponse = await fetch(`${API_URL}/api/auth/userDetails`, {
           method: "GET",
           headers: {
-            "Authorization": `Bearer ${token}`, // Assuming Bearer token
+            "Authorization": `Bearer ${token}`,
           },
         });
 
         if (userDetailsResponse.ok) {
            const responseJson = await userDetailsResponse.json();
-           const userData = responseJson.data || responseJson; // Handle wrapped or unwrapped data
-           
-           // Store user details (ensure consistency with what app expects)
+           const userData = responseJson.data || responseJson;
            const userToStore = {
              email: userData.email,
-             fullName: userData.fullName || userData.name, 
+             fullName: userData.fullName || userData.name,
              phone: userData.mobile || userData.phone || "",
              countryCode: userData.countryCode,
              _id: userData._id || userData.id,
@@ -112,17 +110,15 @@ const Login = () => {
            };
            localStorage.setItem("parampare_user", JSON.stringify(userToStore));
         } else {
-           // Fallback if details fetch fails but login succeeded (rare)
-           console.warn("Failed to fetch user details");
-           localStorage.setItem("parampare_user", JSON.stringify({ email })); 
+           localStorage.setItem("parampare_user", JSON.stringify({ email }));
         }
 
         toast({
           title: "Login Successful!",
           description: "Welcome back to Parampare",
         });
-        
-        navigate("/");
+
+        navigate(returnTo || "/");
 
       } catch (error: any) {
         toast({

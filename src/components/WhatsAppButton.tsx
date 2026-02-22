@@ -1,7 +1,7 @@
 import { forwardRef } from "react";
 
 const WhatsAppButton = forwardRef<HTMLAnchorElement>((_, ref) => {
-  const phoneNumber = "919876543210"; // Without + sign for wa.me
+  const phoneNumber = "918722116959"; // Without + sign for wa.me
   const prefilledMessage = encodeURIComponent(
     "Hi! I'm interested in your Ilkal saree collection. Can you help me find the perfect saree?"
   );

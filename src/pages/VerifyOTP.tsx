@@ -19,7 +19,7 @@ const VerifyOTP = () => {
 
   const { identifier, isLogin, returnTo, userData, apiResponse } = location.state || {};
 
-  const API_URL = import.meta.env.VITE_API_URL || "https://paramparebackend.vercel.app";
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
   useEffect(() => {
     if (!identifier) {

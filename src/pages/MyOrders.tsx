@@ -96,19 +96,51 @@ const OrderTrackingSteps = ({ status }: { status: string }) => {
   );
 };
 
+import apiClient from "@/lib/apiClient";
+
 const MyOrders = () => {
   const navigate = useNavigate();
   const [orders, setOrders] = useState<Order[]>([]);
 
   useEffect(() => {
     const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
-    if (!isLoggedIn) {
-      navigate("/login", { state: { returnTo: "/orders" } });
-      return;
-    }
+    if (!isLoggedIn) { navigate("/login", { state: { returnTo: "/orders" } }); return; }
 
-    const savedOrders = JSON.parse(localStorage.getItem("orders") || "[]");
-    setOrders(savedOrders);
+    const loadOrders = async () => {
+      const token = localStorage.getItem("token");
+      if (token) {
+        try {
+          const res = await apiClient.get("/orders/my");
+          const raw = res.data.data || [];
+          const mapped: Order[] = raw.map((o: any) => ({
+            id: o.orderId || o._id,
+            date: o.createdAt,
+            items: (o.items || []).map((i: any) => ({
+              id: i.product || i._id,
+              name: i.name,
+              image: i.image || "",
+              price: i.price,
+              quantity: i.quantity,
+            })),
+            address: o.shippingAddress,
+            status: o.status,
+            paymentMethod: o.paymentMethod,
+            subtotal: o.subtotal,
+            deliveryCharge: o.deliveryCharge,
+            total: o.totalAmount,
+            estimatedDelivery: o.estimatedDelivery,
+            trackingNumber: o.trackingNumber,
+          }));
+          setOrders(mapped);
+          return;
+        } catch { /* fall through to localStorage */ }
+      }
+      // localStorage fallback
+      const savedOrders = JSON.parse(localStorage.getItem("orders") || "[]");
+      setOrders(savedOrders);
+    };
+
+    loadOrders();
   }, [navigate]);
 
   const formatDate = (dateString: string) => {

@@ -1,6 +1,6 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { Heart, Star, Minus, Plus, ShoppingBag, Zap, Truck, RotateCcw, Shield, Check, Share2, Ruler } from "lucide-react";
+import { Heart, Star, Minus, Plus, ShoppingBag, Zap, Truck, RotateCcw, Shield, Check, Share2, Ruler, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -10,126 +10,8 @@ import Footer from "@/components/layout/Footer";
 import BackToTop from "@/components/layout/BackToTop";
 import { useToast } from "@/hooks/use-toast";
 import { useWishlist } from "@/hooks/useWishlist";
-
-// Import actual saree images
-import saree1 from "@/assets/saree-1.jpg";
-import saree2 from "@/assets/saree-2.jpg";
-import saree3 from "@/assets/saree-3.jpg";
-import saree4 from "@/assets/saree-4.jpg";
-
-// Product data with actual images
-const productsData: Record<string, {
-  id: string;
-  name: string;
-  images: string[];
-  price: number;
-  originalPrice?: number;
-  rating: number;
-  reviews: number;
-  badge?: string;
-  inStock: boolean;
-  color: string;
-  borderType: string;
-  blousePiece: boolean;
-  deliveryDays: string;
-  description: string;
-  careInstructions: string[];
-}> = {
-  "1": {
-    id: "1",
-    name: "Authentic Ilkal Saree – Teni Pallu",
-    images: [saree1, saree2, saree3, saree4],
-    price: 2999,
-    originalPrice: 4499,
-    rating: 4.6,
-    reviews: 128,
-    badge: "GI Certified",
-    inStock: true,
-    color: "Maroon Red",
-    borderType: "Teni Pallu (Top Border)",
-    blousePiece: true,
-    deliveryDays: "5-7",
-    description: `This exquisite Ilkal saree showcases the rich heritage of Karnataka's handloom tradition. 
-Crafted by skilled artisans, it features the distinctive Teni Pallu design with intricate kasuti work.
-The saree is made from premium quality cotton-silk blend, ensuring comfort and elegance.`,
-    careInstructions: [
-      "Hand wash recommended",
-      "Use mild detergent",
-      "Dry in shade",
-      "Iron on medium heat",
-    ],
-  },
-  "2": {
-    id: "2",
-    name: "Traditional Kasuti Work Saree",
-    images: [saree2, saree1, saree4, saree3],
-    price: 3499,
-    originalPrice: 5999,
-    rating: 4.8,
-    reviews: 89,
-    badge: "GI Certified",
-    inStock: true,
-    color: "Forest Green",
-    borderType: "Temple Border",
-    blousePiece: true,
-    deliveryDays: "5-7",
-    description: `A stunning example of traditional Kasuti embroidery on authentic Ilkal fabric.
-This saree features intricate geometric patterns handwoven by master artisans from Karnataka.
-Perfect for weddings and special celebrations.`,
-    careInstructions: [
-      "Dry clean recommended",
-      "Store in muslin cloth",
-      "Avoid direct sunlight",
-      "Iron on silk setting",
-    ],
-  },
-  "3": {
-    id: "3",
-    name: "Handwoven Silk Ilkal Saree",
-    images: [saree3, saree4, saree1, saree2],
-    price: 4299,
-    rating: 4.5,
-    reviews: 56,
-    badge: "New Arrival",
-    inStock: true,
-    color: "Royal Maroon",
-    borderType: "Broad Zari Border",
-    blousePiece: true,
-    deliveryDays: "5-7",
-    description: `Luxurious pure silk Ilkal saree with heavy zari work throughout.
-This masterpiece features traditional motifs and a rich pallu that makes a statement.
-Ideal for bridal wear and grand celebrations.`,
-    careInstructions: [
-      "Dry clean only",
-      "Store with silica gel packets",
-      "Avoid perfumes on fabric",
-      "Use padded hangers",
-    ],
-  },
-  "4": {
-    id: "4",
-    name: "Cotton Ilkal Saree – Blue",
-    images: [saree4, saree3, saree2, saree1],
-    price: 1999,
-    originalPrice: 2999,
-    rating: 4.4,
-    reviews: 234,
-    inStock: true,
-    color: "Royal Blue",
-    borderType: "Self Border",
-    blousePiece: true,
-    deliveryDays: "3-5",
-    description: `Comfortable and elegant pure cotton Ilkal saree perfect for daily wear.
-This lightweight saree features subtle traditional patterns and is ideal for office or casual outings.
-Breathable fabric keeps you cool throughout the day.`,
-    careInstructions: [
-      "Machine wash gentle cycle",
-      "Use mild detergent",
-      "Tumble dry low",
-      "Iron on cotton setting",
-    ],
-  },
-};
+import { fetchProductById, Product } from "@/lib/api";
+import apiClient from "@/lib/apiClient";
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -140,10 +22,56 @@ const ProductDetail = () => {
   const [selectedImage, setSelectedImage] = useState(0);
   const [isZooming, setIsZooming] = useState(false);
   const [zoomPosition, setZoomPosition] = useState({ x: 50, y: 50 });
+  const [product, setProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState(true);
   const imageRef = useRef<HTMLDivElement>(null);
 
-  // Get product data or fallback to default
-  const product = productsData[id || "1"] || productsData["1"];
+  useEffect(() => {
+    const loadProduct = async () => {
+      if (!id) return;
+      setLoading(true);
+      try {
+        const response = await fetchProductById(id);
+        if (response.success) {
+          setProduct(response.data);
+          setSelectedImage(0);
+        }
+      } catch (error) {
+        console.error("Failed to load product:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load product details.",
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadProduct();
+  }, [id]);
+
+
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background">
+        <Loader2 className="h-12 w-12 text-gold animate-spin mb-4" />
+        <p className="text-muted-foreground">Fetching product details...</p>
+      </div>
+    );
+  }
+
+  if (!product) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background">
+        <h2 className="text-2xl font-display font-semibold mb-4">Product Not Found</h2>
+        <Button onClick={() => navigate("/products")}>Back to Products</Button>
+      </div>
+    );
+  }
+
+
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!imageRef.current) return;
@@ -157,64 +85,41 @@ const ProductDetail = () => {
     window.dispatchEvent(new Event("cartUpdated"));
   };
 
-  const handleAddToCart = () => {
-    const existingCart = JSON.parse(localStorage.getItem("cart") || "[]");
-    const existingItem = existingCart.find((item: { id: string }) => item.id === product.id);
-    
-    if (existingItem) {
-      existingItem.quantity = Math.min(existingItem.quantity + quantity, 5);
-    } else {
-      existingCart.push({ 
-        ...product, 
-        quantity,
-        image: product.images[0] 
-      });
+  const handleAddToCart = async () => {
+    const image = (product.images && product.images.length > 0) ? product.images[0] : "/placeholder.svg";
+    const token = localStorage.getItem("token");
+    if (token) {
+      try {
+        await apiClient.post("/cart/add", { productId: product.id, quantity });
+      } catch { /* ignore, sync local below */ }
     }
-    
-    localStorage.setItem("cart", JSON.stringify(existingCart));
-    dispatchCartUpdate();
-    
-    toast({
-      title: "Added to cart!",
-      description: `${product.name} has been added to your cart.`,
-    });
+    // Always sync localStorage so Cart page can read it
+    const cart = JSON.parse(localStorage.getItem("cart") || "[]");
+    const existing = cart.find((i: any) => i.id === product.id);
+    if (existing) existing.quantity = Math.min(existing.quantity + quantity, 5);
+    else cart.push({ ...product, quantity, image });
+    localStorage.setItem("cart", JSON.stringify(cart));
+    window.dispatchEvent(new Event("cartUpdated"));
+    toast({ title: "Added to cart!", description: `${product.name} has been added to your cart.` });
   };
 
-  const handleBuyNow = () => {
-    const existingCart = JSON.parse(localStorage.getItem("cart") || "[]");
-    const existingItem = existingCart.find((item: { id: string }) => item.id === product.id);
-    
-    if (existingItem) {
-      existingItem.quantity = Math.min(existingItem.quantity + quantity, 5);
-    } else {
-      existingCart.push({ 
-        ...product, 
-        quantity,
-        image: product.images[0]
-      });
-    }
-    
-    localStorage.setItem("cart", JSON.stringify(existingCart));
-    dispatchCartUpdate();
-    
+  const handleBuyNow = async () => {
+    await handleAddToCart();
     const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
-    if (!isLoggedIn) {
-      navigate("/login", { state: { returnTo: "/checkout" } });
-    } else {
-      navigate("/checkout");
-    }
+    if (!isLoggedIn) navigate("/login", { state: { returnTo: "/checkout" } });
+    else navigate("/checkout");
   };
 
-  const handleWishlistClick = () => {
-    const wasAdded = toggleWishlist({
+  const handleWishlistClick = async () => {
+    const wasAdded = await toggleWishlist({
       id: product.id,
       name: product.name,
-      image: product.images[0],
+      image: (product.images && product.images.length > 0) ? product.images[0] : "/placeholder.svg",
       price: product.price,
       originalPrice: product.originalPrice,
       rating: product.rating,
-      reviews: product.reviews,
-      badge: product.badge,
+      reviews: product.reviewCount || 0,
+      badge: (product.badges && product.badges.length > 0) ? product.badges[0] : undefined,
       inStock: product.inStock,
     });
     
@@ -248,23 +153,27 @@ const ProductDetail = () => {
           <div className="flex flex-col lg:flex-row gap-4">
             {/* Thumbnails - Left side on desktop */}
             <div className="order-2 lg:order-1 flex lg:flex-col gap-3 overflow-x-auto lg:overflow-y-auto lg:max-h-[600px] pb-2 lg:pb-0 lg:pr-2">
-              {product.images.map((image, index) => (
-                <button
-                  key={index}
-                  onClick={() => setSelectedImage(index)}
-                  className={`flex-shrink-0 w-16 h-20 lg:w-20 lg:h-24 rounded-lg overflow-hidden border-2 transition-all ${
-                    selectedImage === index
-                      ? "border-gold ring-2 ring-gold/30"
-                      : "border-transparent hover:border-border"
-                  }`}
-                >
-                  <img
-                    src={image}
-                    alt={`${product.name} ${index + 1}`}
-                    className="w-full h-full object-cover"
-                  />
-                </button>
-              ))}
+              {(product.images && product.images.length > 0) ? (
+                product.images.map((image, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setSelectedImage(index)}
+                    className={`flex-shrink-0 w-16 h-20 lg:w-20 lg:h-24 rounded-lg overflow-hidden border-2 transition-all ${
+                      selectedImage === index
+                        ? "border-gold ring-2 ring-gold/30"
+                        : "border-transparent hover:border-border"
+                    }`}
+                  >
+                    <img
+                      src={image}
+                      alt={`${product.name} ${index + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                  </button>
+                ))
+              ) : (
+                <div className="w-20 h-24 rounded-lg bg-secondary border-2 border-border" />
+              )}
             </div>
 
             {/* Main Image with Zoom */}
@@ -277,7 +186,7 @@ const ProductDetail = () => {
                 onMouseLeave={() => setIsZooming(false)}
               >
                 <img
-                  src={product.images[selectedImage]}
+                  src={(product.images && product.images.length > 0) ? product.images[selectedImage] : "/placeholder.svg"}
                   alt={product.name}
                   className="w-full h-full object-cover"
                 />
@@ -300,7 +209,7 @@ const ProductDetail = () => {
                   <div
                     className="w-full h-full"
                     style={{
-                      backgroundImage: `url(${product.images[selectedImage]})`,
+                      backgroundImage: `url("${(product.images && product.images.length > 0) ? product.images[selectedImage] : "/placeholder.svg"}")`,
                       backgroundSize: "250%",
                       backgroundPosition: `${zoomPosition.x}% ${zoomPosition.y}%`,
                     }}
@@ -362,7 +271,7 @@ const ProductDetail = () => {
               </div>
               <span className="font-medium">{product.rating}</span>
               <Link to="#reviews" className="text-gold hover:underline text-sm">
-                View all {product.reviews} reviews
+                View all {product.reviewCount} reviews
               </Link>
             </div>
 
@@ -381,9 +290,9 @@ const ProductDetail = () => {
               {product.originalPrice && (
                 <p className="text-green-600 font-medium">
                   You save ₹{(product.originalPrice - product.price).toLocaleString()} (
-                  {Math.round(
+                  {product.originalPrice > 0 ? Math.round(
                     ((product.originalPrice - product.price) / product.originalPrice) * 100
-                  )}
+                  ) : 0}
                   % off)
                 </p>
               )}
@@ -398,11 +307,11 @@ const ProductDetail = () => {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Border Type</p>
-                <p className="font-medium">{product.borderType}</p>
+                <p className="font-medium">{product.border || "Traditional"}</p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Blouse Piece</p>
-                <p className="font-medium">{product.blousePiece ? "Yes" : "No"}</p>
+                <p className="font-medium">{product.blouse || "Included"}</p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Availability</p>
@@ -453,7 +362,7 @@ const ProductDetail = () => {
             {/* Delivery Info */}
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Truck className="h-4 w-4" />
-              <span>Delivered in {product.deliveryDays} working days</span>
+              <span>Delivered in {product.deliveryTimeDays} working days</span>
             </div>
 
             {/* Quantity Selector */}
@@ -547,7 +456,7 @@ const ProductDetail = () => {
           <div className="space-y-4">
             <h2 className="text-xl font-display font-semibold">Care Instructions</h2>
             <ul className="space-y-2">
-              {product.careInstructions.map((instruction, index) => (
+              {Array.isArray(product.careInstructions) && product.careInstructions.map((instruction, index) => (
                 <li key={index} className="flex items-center gap-2 text-muted-foreground">
                   <Check className="h-4 w-4 text-gold flex-shrink-0" />
                   {instruction}

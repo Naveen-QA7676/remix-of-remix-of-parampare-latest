@@ -16,9 +16,9 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu";
-import { sareesCategories, dressMaterialsCategories, occasionsCategories } from "@/data/categories";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { fetchCategoryTree, Category } from "@/lib/api";
 // import logoImage from "@/assets/logo.jpg";
 
 const MainHeader = () => {
@@ -30,6 +30,7 @@ const MainHeader = () => {
   const [wishlistCount, setWishlistCount] = useState(0);
   const [mobileDropdown, setMobileDropdown] = useState<string | null>(null);
   const [accountHovered, setAccountHovered] = useState(false);
+  const [categories, setCategories] = useState<Category[]>([]);
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
@@ -57,7 +58,19 @@ const MainHeader = () => {
       setWishlistCount(wishlist.length);
     };
 
+    const loadCategories = async () => {
+      try {
+        const res = await fetchCategoryTree();
+        if (res.success) {
+          setCategories(res.data);
+        }
+      } catch (error) {
+        console.error("Failed to load categories:", error);
+      }
+    };
+
     checkAuth();
+    loadCategories();
     window.addEventListener("storage", checkAuth);
     window.addEventListener("cartUpdated", checkAuth);
     window.addEventListener("wishlistUpdated", checkAuth);
@@ -72,8 +85,13 @@ const MainHeader = () => {
   const handleLogout = () => {
     localStorage.removeItem("isLoggedIn");
     localStorage.removeItem("parampare_user");
+    localStorage.removeItem("token");
+    localStorage.removeItem("cart");
+    localStorage.removeItem("wishlist");
     setIsLoggedIn(false);
     setUserName("");
+    setCartCount(0);
+    setWishlistCount(0);
     toast({
       title: "Signed Out",
       description: "You have been successfully signed out.",
@@ -171,28 +189,21 @@ const MainHeader = () => {
                   </NavigationMenuTrigger>
                   <NavigationMenuContent className="z-[100]">
                     <div className="w-[600px] p-6 bg-card border border-border shadow-xl rounded-lg">
-                      <div className="grid grid-cols-3 gap-6">
-                        {sareesCategories.map((group) => (
-                          <div key={group.heading}>
-                            <h4 className="font-semibold text-foreground text-xs uppercase tracking-wide mb-3">
-                              {group.heading}
-                            </h4>
-                            <ul className="space-y-2">
-                              {group.items.map((item) => (
-                                <li key={item.label}>
-                                  <NavigationMenuLink asChild>
-                                    <Link
-                                      to={item.href}
-                                      className="text-sm text-muted-foreground hover:text-gold transition-colors block py-1"
-                                    >
-                                      {item.label}
-                                    </Link>
-                                  </NavigationMenuLink>
-                                </li>
-                              ))}
-                            </ul>
+                      <div className="grid grid-cols-2 gap-6">
+                        {categories.find(c => c.slug === 'sarees')?.children?.map((sub) => (
+                          <div key={sub._id}>
+                            <NavigationMenuLink asChild>
+                              <Link
+                                to={`/category/sarees/${sub.slug}`}
+                                className="text-sm text-muted-foreground hover:text-gold transition-colors block py-1"
+                              >
+                                {sub.name}
+                              </Link>
+                            </NavigationMenuLink>
                           </div>
-                        ))}
+                        )) || (
+                          <div className="text-sm text-muted-foreground">Loading categories...</div>
+                        )}
                       </div>
                     </div>
                   </NavigationMenuContent>
@@ -206,18 +217,20 @@ const MainHeader = () => {
                   <NavigationMenuContent className="z-[100]">
                     <div className="w-[250px] p-4 bg-card border border-border shadow-xl rounded-lg">
                       <ul className="space-y-2">
-                        {dressMaterialsCategories.map((item) => (
-                          <li key={item.label}>
+                        {categories.find(c => c.slug === 'dress-materials')?.children?.map((sub) => (
+                          <li key={sub._id}>
                             <NavigationMenuLink asChild>
                               <Link
-                                to={item.href}
+                                to={`/category/dress-materials/${sub.slug}`}
                                 className="text-sm text-muted-foreground hover:text-gold transition-colors block py-2 px-2 rounded hover:bg-secondary/50"
                               >
-                                {item.label}
+                                {sub.name}
                               </Link>
                             </NavigationMenuLink>
                           </li>
-                        ))}
+                        )) || (
+                          <li className="text-sm text-muted-foreground px-2">No items found</li>
+                        )}
                       </ul>
                     </div>
                   </NavigationMenuContent>
@@ -231,18 +244,20 @@ const MainHeader = () => {
                   <NavigationMenuContent className="z-[100]">
                     <div className="w-[250px] p-4 bg-card border border-border shadow-xl rounded-lg">
                       <ul className="space-y-2">
-                        {occasionsCategories.map((item) => (
-                          <li key={item.label}>
+                        {categories.find(c => c.slug === 'occasions')?.children?.map((sub) => (
+                          <li key={sub._id}>
                             <NavigationMenuLink asChild>
                               <Link
-                                to={item.href}
+                                to={`/category/occasions/${sub.slug}`}
                                 className="text-sm text-muted-foreground hover:text-gold transition-colors block py-2 px-2 rounded hover:bg-secondary/50"
                               >
-                                {item.label}
+                                {sub.name}
                               </Link>
                             </NavigationMenuLink>
                           </li>
-                        ))}
+                        )) || (
+                          <li className="text-sm text-muted-foreground px-2">No items found</li>
+                        )}
                       </ul>
                     </div>
                   </NavigationMenuContent>
@@ -437,23 +452,16 @@ const MainHeader = () => {
                 </button>
                 {mobileDropdown === "sarees" && (
                   <div className="pl-4 pb-2 space-y-3 animate-fade-in">
-                    {sareesCategories.map((group) => (
-                      <div key={group.heading}>
-                        <h4 className="text-xs uppercase tracking-wide text-muted-foreground font-semibold mb-2 px-2">
-                          {group.heading}
-                        </h4>
-                        {group.items.map((item) => (
-                          <Link
-                            key={item.label}
-                            to={item.href}
-                            onClick={() => setIsMobileMenuOpen(false)}
-                            className="block py-2 px-2 text-sm text-foreground/80 hover:text-gold"
-                          >
-                            {item.label}
-                          </Link>
-                        ))}
-                      </div>
-                    ))}
+                    {categories.find(c => c.slug === 'sarees')?.children?.map((sub) => (
+                      <Link
+                        key={sub._id}
+                        to={`/category/sarees/${sub.slug}`}
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="block py-2 px-2 text-sm text-foreground/80 hover:text-gold"
+                      >
+                        {sub.name}
+                      </Link>
+                    )) || <div className="text-xs text-muted-foreground px-2">No items found</div>}
                   </div>
                 )}
               </div>
@@ -469,16 +477,16 @@ const MainHeader = () => {
                 </button>
                 {mobileDropdown === "dress" && (
                   <div className="pl-4 pb-2 animate-fade-in">
-                    {dressMaterialsCategories.map((item) => (
+                    {categories.find(c => c.slug === 'dress-materials')?.children?.map((sub) => (
                       <Link
-                        key={item.label}
-                        to={item.href}
+                        key={sub._id}
+                        to={`/category/dress-materials/${sub.slug}`}
                         onClick={() => setIsMobileMenuOpen(false)}
                         className="block py-2 px-2 text-sm text-foreground/80 hover:text-gold"
                       >
-                        {item.label}
+                        {sub.name}
                       </Link>
-                    ))}
+                    )) || <div className="text-xs text-muted-foreground px-2">No items found</div>}
                   </div>
                 )}
               </div>
@@ -494,16 +502,16 @@ const MainHeader = () => {
                 </button>
                 {mobileDropdown === "occasions" && (
                   <div className="pl-4 pb-2 animate-fade-in">
-                    {occasionsCategories.map((item) => (
+                    {categories.find(c => c.slug === 'occasions')?.children?.map((sub) => (
                       <Link
-                        key={item.label}
-                        to={item.href}
+                        key={sub._id}
+                        to={`/category/occasions/${sub.slug}`}
                         onClick={() => setIsMobileMenuOpen(false)}
                         className="block py-2 px-2 text-sm text-foreground/80 hover:text-gold"
                       >
-                        {item.label}
+                        {sub.name}
                       </Link>
-                    ))}
+                    )) || <div className="text-xs text-muted-foreground px-2">No items found</div>}
                   </div>
                 )}
               </div>

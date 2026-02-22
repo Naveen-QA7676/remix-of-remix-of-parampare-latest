@@ -29,7 +29,7 @@ const Register = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const API_URL = import.meta.env.VITE_API_URL || "https://paramparebackend.vercel.app";
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
   const getPasswordValidation = (password: string) => {
     return passwordRules.map((rule) => ({

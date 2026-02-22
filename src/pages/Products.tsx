@@ -1,6 +1,6 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { Heart, Star, Filter, X, PackageX } from "lucide-react";
+import { Heart, Star, Filter, X, PackageX, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -20,35 +20,17 @@ import MainHeader from "@/components/layout/MainHeader";
 import Footer from "@/components/layout/Footer";
 import BackToTop from "@/components/layout/BackToTop";
 import ProductFilters from "@/components/products/ProductFilters";
+import ProductCard from "@/components/products/ProductCard";
 import { useWishlist } from "@/hooks/useWishlist";
 import { useToast } from "@/hooks/use-toast";
+import { fetchProducts, Product as APIProduct } from "@/lib/api";
 
-// Import actual saree images
-import saree1 from "@/assets/saree-1.jpg";
-import saree2 from "@/assets/saree-2.jpg";
-import saree3 from "@/assets/saree-3.jpg";
-import saree4 from "@/assets/saree-4.jpg";
-
-interface Product {
-  id: string;
-  name: string;
+// Use APIProduct directly from @/lib/api
+type Product = APIProduct & {
   image: string;
-  price: number;
-  originalPrice?: number;
-  rating: number;
   reviews: number;
-  badge?: "Best Seller" | "New Arrival" | "GI Certified";
-  inStock: boolean;
-  // Filter attributes
-  fabric?: string;
-  color?: string;
-  occasion?: string;
-  weave?: string;
-  border?: string;
-  pallu?: string;
-  blouse?: string;
-  createdAt?: string;
-}
+  badge?: string;
+};
 
 const sortOptions = [
   { label: "Relevance", value: "relevance" },
@@ -61,159 +43,15 @@ const sortOptions = [
   { label: "Discount: High to Low", value: "discount-desc" },
 ];
 
-// Sample products data with actual images
-const allProducts: Product[] = [
-  {
-    id: "1",
-    name: "Ilkal Saree – Teni Pallu Red",
-    image: saree1,
-    price: 2999,
-    originalPrice: 4499,
-    rating: 4.6,
-    reviews: 128,
-    badge: "Best Seller",
-    inStock: true,
-    fabric: "pure-cotton",
-    color: "red",
-    occasion: "festive",
-    weave: "ilkal-traditional",
-    border: "zari",
-    pallu: "tope-teni",
-    blouse: "running",
-    createdAt: "2025-01-15",
-  },
-  {
-    id: "2",
-    name: "Traditional Kasuti Work Saree",
-    image: saree2,
-    price: 3499,
-    originalPrice: 5999,
-    rating: 4.8,
-    reviews: 89,
-    badge: "GI Certified",
-    inStock: true,
-    fabric: "cotton-silk",
-    color: "green",
-    occasion: "wedding",
-    weave: "handloom",
-    border: "temple",
-    pallu: "zari",
-    blouse: "contrast",
-    createdAt: "2025-01-10",
-  },
-  {
-    id: "3",
-    name: "Handwoven Silk Ilkal Saree",
-    image: saree3,
-    price: 4299,
-    rating: 4.5,
-    reviews: 56,
-    badge: "New Arrival",
-    inStock: true,
-    fabric: "pure-silk",
-    color: "maroon",
-    occasion: "wedding",
-    weave: "zari-border",
-    border: "broad",
-    pallu: "heavy",
-    blouse: "attached",
-    createdAt: "2025-01-20",
-  },
-  {
-    id: "4",
-    name: "Cotton Ilkal Saree – Blue",
-    image: saree4,
-    price: 1999,
-    originalPrice: 2999,
-    rating: 4.4,
-    reviews: 234,
-    inStock: true,
-    fabric: "pure-cotton",
-    color: "blue",
-    occasion: "daily",
-    weave: "ilkal-traditional",
-    border: "self",
-    pallu: "simple",
-    blouse: "running",
-    createdAt: "2024-12-01",
-  },
-  {
-    id: "5",
-    name: "Festive Maroon Ilkal Saree",
-    image: saree1,
-    price: 3799,
-    originalPrice: 5499,
-    rating: 4.7,
-    reviews: 167,
-    badge: "Best Seller",
-    inStock: true,
-    fabric: "silk-blend",
-    color: "maroon",
-    occasion: "festive",
-    weave: "tope-teni",
-    border: "contrast",
-    pallu: "tope-teni",
-    blouse: "contrast",
-    createdAt: "2025-01-05",
-  },
-  {
-    id: "6",
-    name: "Pure Silk Teni Border Saree",
-    image: saree2,
-    price: 5499,
-    rating: 4.9,
-    reviews: 45,
-    badge: "GI Certified",
-    inStock: true,
-    fabric: "pure-silk",
-    color: "yellow",
-    occasion: "wedding",
-    weave: "zari-border",
-    border: "zari",
-    pallu: "heavy",
-    blouse: "attached",
-    createdAt: "2025-01-18",
-  },
-  {
-    id: "7",
-    name: "Daily Wear Cotton Saree",
-    image: saree3,
-    price: 1499,
-    originalPrice: 1999,
-    rating: 4.2,
-    reviews: 312,
-    inStock: true,
-    fabric: "pure-cotton",
-    color: "white",
-    occasion: "daily",
-    weave: "handloom",
-    border: "self",
-    pallu: "simple",
-    blouse: "running",
-    createdAt: "2024-11-15",
-  },
-  {
-    id: "8",
-    name: "Office Wear Art Silk Saree",
-    image: saree4,
-    price: 2499,
-    rating: 4.3,
-    reviews: 98,
-    inStock: true,
-    fabric: "art-silk",
-    color: "blue",
-    occasion: "office",
-    weave: "jacquard",
-    border: "contrast",
-    pallu: "simple",
-    blouse: "running",
-    createdAt: "2024-12-20",
-  },
-];
-
 const Products = () => {
   const [searchParams] = useSearchParams();
   const category = searchParams.get("category") || "All Sarees";
+  const search = searchParams.get("search") || "";
+  
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [totalCount, setTotalCount] = useState(0);
+  
   const [sortBy, setSortBy] = useState("relevance");
   const [selectedFilters, setSelectedFilters] = useState<Record<string, string[]>>({});
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 20000]);
@@ -221,96 +59,61 @@ const Products = () => {
   const { isInWishlist, toggleWishlist } = useWishlist();
   const { toast } = useToast();
 
-  // Calculate discount percentage for a product
-  const getDiscount = (product: Product) => {
-    if (!product.originalPrice) return 0;
-    return Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100);
-  };
+  // Fetch products from API
+  useEffect(() => {
+    const loadProducts = async () => {
+      setLoading(true);
+      try {
+        const params: any = {
+          category,
+          search,
+          minPrice: priceRange[0],
+          maxPrice: priceRange[1],
+          sort: sortBy === 'price-asc' ? 'price_asc' : 
+                sortBy === 'price-desc' ? 'price_desc' : 
+                sortBy === 'rating' ? 'rating_desc' : 
+                sortBy === 'new' ? 'newest' : undefined,
+        };
 
-  // Filter and sort products using useMemo
-  const filteredAndSortedProducts = useMemo(() => {
-    let result = [...allProducts];
+        // Map frontend filters to API params
+        if (selectedFilters.fabric?.length) params.fabric = selectedFilters.fabric[0];
+        if (selectedFilters.occasion?.length) params.occasion = selectedFilters.occasion[0];
+        if (selectedFilters.color?.length) params.color = selectedFilters.color[0];
+        if (selectedFilters.weave?.length) params.weave = selectedFilters.weave[0];
+        if (selectedFilters.border?.length) params.border = selectedFilters.border[0];
+        if (selectedFilters.pallu?.length) params.pallu = selectedFilters.pallu[0];
 
-    // Apply URL query params for filtering
-    const fabricParam = searchParams.get("fabric");
-    const occasionParam = searchParams.get("occasion");
-    const palluParam = searchParams.get("pallu");
-    const borderParam = searchParams.get("border");
-    const weaveParam = searchParams.get("weave");
-    const designParam = searchParams.get("design");
-
-    if (fabricParam) {
-      result = result.filter((p) => p.fabric?.includes(fabricParam));
-    }
-    if (occasionParam) {
-      result = result.filter((p) => p.occasion === occasionParam);
-    }
-    if (palluParam) {
-      result = result.filter((p) => p.pallu?.includes(palluParam));
-    }
-    if (borderParam) {
-      result = result.filter((p) => p.border?.includes(borderParam));
-    }
-    if (weaveParam) {
-      result = result.filter((p) => p.weave?.includes(weaveParam));
-    }
-
-    // Apply price filter
-    result = result.filter(
-      (product) => product.price >= priceRange[0] && product.price <= priceRange[1]
-    );
-
-    // Apply category filters
-    Object.entries(selectedFilters).forEach(([key, values]) => {
-      if (values.length > 0) {
-        if (key === "discount") {
-          // Handle discount filter specially
-          const minDiscount = Math.max(...values.map((v) => parseInt(v)));
-          result = result.filter((product) => getDiscount(product) >= minDiscount);
+        const response = await fetchProducts(params);
+        if (response.success && Array.isArray(response.products)) {
+          // Map backend data to frontend-friendly format
+          const mappedProducts = response.products.map(p => ({
+            ...p,
+            image: (p.images && p.images.length > 0) ? p.images[0] : "/placeholder.svg",
+            reviews: p.reviewCount || 0,
+            badge: (p.badges && p.badges.length > 0) ? p.badges[0] : undefined
+          }));
+          setProducts(mappedProducts);
+          setTotalCount(response.count || mappedProducts.length);
         } else {
-          // Standard filter - match any of the selected values
-          result = result.filter((product) => {
-            const productValue = product[key as keyof Product] as string | undefined;
-            return productValue && values.includes(productValue);
-          });
+          setProducts([]);
+          setTotalCount(0);
         }
-      }
-    });
-
-    // Apply sorting
-    switch (sortBy) {
-      case "price-asc":
-        result.sort((a, b) => a.price - b.price);
-        break;
-      case "price-desc":
-        result.sort((a, b) => b.price - a.price);
-        break;
-      case "rating":
-        result.sort((a, b) => b.rating - a.rating);
-        break;
-      case "new":
-        result.sort((a, b) => {
-          const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-          const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-          return dateB - dateA;
+      } catch (error) {
+        console.error("Failed to load products:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load products. Please try again later.",
+          variant: "destructive",
         });
-        break;
-      case "popularity":
-        result.sort((a, b) => b.reviews - a.reviews);
-        break;
-      case "discount-asc":
-        result.sort((a, b) => getDiscount(a) - getDiscount(b));
-        break;
-      case "discount-desc":
-        result.sort((a, b) => getDiscount(b) - getDiscount(a));
-        break;
-      default:
-        // relevance - keep original order
-        break;
-    }
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    return result;
-  }, [selectedFilters, priceRange, sortBy, searchParams]);
+    loadProducts();
+  }, [category, search, sortBy, selectedFilters, priceRange]);
+
+  const filteredAndSortedProducts = products;
 
   const handleFilterChange = (key: string, value: string, checked: boolean) => {
     setSelectedFilters((prev) => {
@@ -329,45 +132,11 @@ const Products = () => {
   };
 
   const handleApply = () => {
-    setMobileFilterOpen(false);
     toast({
       title: "Filters Applied",
-      description: `Showing ${filteredAndSortedProducts.length} products`,
+      description: `Showing ${products.length} products`,
     });
-  };
-
-  const handleWishlistClick = (product: Product) => {
-    const wasAdded = toggleWishlist({
-      id: product.id,
-      name: product.name,
-      image: product.image,
-      price: product.price,
-      originalPrice: product.originalPrice,
-      rating: product.rating,
-      reviews: product.reviews,
-      badge: product.badge,
-      inStock: product.inStock,
-    });
-    
-    toast({
-      title: wasAdded ? "Added to Wishlist" : "Removed from Wishlist",
-      description: wasAdded 
-        ? `${product.name} has been added to your wishlist.`
-        : `${product.name} has been removed from your wishlist.`,
-    });
-  };
-
-  const getBadgeColor = (badge: string) => {
-    switch (badge) {
-      case "Best Seller":
-        return "bg-gold text-foreground";
-      case "New Arrival":
-        return "bg-primary text-primary-foreground";
-      case "GI Certified":
-        return "bg-green-600 text-white";
-      default:
-        return "bg-secondary text-secondary-foreground";
-    }
+    setMobileFilterOpen(false);
   };
 
   // Get active filter chips
@@ -448,7 +217,7 @@ const Products = () => {
                 </Sheet>
 
                 <p className="text-sm text-muted-foreground">
-                  Showing {filteredAndSortedProducts.length} of {allProducts.length} sarees
+                  Showing {products.length} of {totalCount} sarees
                 </p>
               </div>
 
@@ -497,8 +266,13 @@ const Products = () => {
               </div>
             )}
 
-            {/* Empty State */}
-            {filteredAndSortedProducts.length === 0 ? (
+            {/* Loading State */}
+            {loading ? (
+              <div className="flex flex-col items-center justify-center py-20">
+                <Loader2 className="h-10 w-10 text-gold animate-spin mb-4" />
+                <p className="text-muted-foreground">Loading beautiful sarees...</p>
+              </div>
+            ) : filteredAndSortedProducts.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 text-center">
                 <div className="w-24 h-24 rounded-full bg-muted flex items-center justify-center mb-6">
                   <PackageX className="h-12 w-12 text-muted-foreground" />
@@ -517,82 +291,7 @@ const Products = () => {
               /* Product Grid */
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
                 {filteredAndSortedProducts.map((product) => (
-                  <div
-                    key={product.id}
-                    className="group bg-card rounded-xl overflow-hidden border border-border/50 shadow-soft hover:shadow-elevated transition-all duration-300"
-                  >
-                    {/* Product Image */}
-                    <div className="relative aspect-[3/4] overflow-hidden bg-secondary">
-                      <Link to={`/product/${product.id}`}>
-                        <img
-                          src={product.image}
-                          alt={product.name}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                          onError={(e) => {
-                            e.currentTarget.src = saree1;
-                          }}
-                        />
-                      </Link>
-                      
-                      {/* Badge */}
-                      {product.badge && (
-                        <div className="absolute top-3 left-3">
-                          <Badge className={getBadgeColor(product.badge)}>
-                            {product.badge}
-                          </Badge>
-                        </div>
-                      )}
-                      
-                      {/* Wishlist Button */}
-                      <button
-                        onClick={() => handleWishlistClick(product)}
-                        className="absolute top-3 right-3 w-9 h-9 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-sm hover:bg-white transition-colors"
-                      >
-                        <Heart
-                          className={`h-5 w-5 ${
-                            isInWishlist(product.id)
-                              ? "fill-destructive text-destructive"
-                              : "text-foreground/70"
-                          }`}
-                        />
-                      </button>
-                    </div>
-
-                    {/* Product Info */}
-                    <div className="p-4">
-                      <Link to={`/product/${product.id}`}>
-                        <h3 className="font-medium text-foreground line-clamp-2 hover:text-gold transition-colors mb-2">
-                          {product.name}
-                        </h3>
-                      </Link>
-                      
-                      {/* Rating */}
-                      <div className="flex items-center gap-1 mb-2">
-                        <Star className="h-4 w-4 fill-gold text-gold" />
-                        <span className="text-sm font-medium">{product.rating}</span>
-                        <span className="text-sm text-muted-foreground">
-                          ({product.reviews})
-                        </span>
-                      </div>
-                      
-                      {/* Price */}
-                      <div className="flex items-baseline gap-2">
-                        <span className="text-lg font-bold text-foreground">
-                          ₹{product.price.toLocaleString()}
-                        </span>
-                        {product.originalPrice && (
-                          <>
-                            <span className="text-sm text-muted-foreground line-through">
-                              ₹{product.originalPrice.toLocaleString()}
-                            </span>
-                            <span className="text-sm text-green-600 font-medium">
-                              {getDiscount(product)}% off
-                            </span>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  </div>
+                  <ProductCard key={product.id} product={product} />
                 ))}
               </div>
             )}

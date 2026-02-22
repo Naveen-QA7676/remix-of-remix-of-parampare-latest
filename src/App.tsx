@@ -11,6 +11,7 @@ import Register from "./pages/Register";
 import VerifyOTP from "./pages/VerifyOTP";
 import Products from "./pages/Products";
 import ProductDetail from "./pages/ProductDetail";
+import CategoryPage from "./pages/CategoryPage";
 import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
 import OrderConfirmation from "./pages/OrderConfirmation";
@@ -68,6 +69,8 @@ const App = () => (
           <Route path="/verify-otp" element={<VerifyOTP />} />
           <Route path="/products" element={<Products />} />
           <Route path="/product/:id" element={<ProductDetail />} />
+          <Route path="/category/:slug" element={<CategoryPage />} />
+          <Route path="/category/:slug/:subslug" element={<CategoryPage />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/order-confirmation" element={<OrderConfirmation />} />

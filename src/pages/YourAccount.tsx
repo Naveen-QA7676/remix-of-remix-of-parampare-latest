@@ -7,6 +7,7 @@ import TopUtilityHeader from "@/components/layout/TopUtilityHeader";
 import MainHeader from "@/components/layout/MainHeader";
 import Footer from "@/components/layout/Footer";
 import { useToast } from "@/hooks/use-toast";
+import apiClient from "@/lib/apiClient";
 
 interface UserData {
   fullName: string;
@@ -53,41 +54,31 @@ const YourAccount = () => {
     }
   }, [navigate]);
 
-  const handleSave = () => {
-    // Validate
+  const handleSave = async () => {
     if (!editData.fullName.trim()) {
-      toast({
-        title: "Error",
-        description: "Name is required",
-        variant: "destructive",
-      });
+      toast({ title: "Error", description: "Name is required", variant: "destructive" });
       return;
     }
     if (!editData.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(editData.email)) {
-      toast({
-        title: "Error",
-        description: "Please enter a valid email address",
-        variant: "destructive",
-      });
+      toast({ title: "Error", description: "Please enter a valid email address", variant: "destructive" });
       return;
     }
 
-    // Save to localStorage
+    // Try API first
+    const token = localStorage.getItem("token");
+    if (token) {
+      try {
+        await apiClient.patch("/user/profile", { fullName: editData.fullName, email: editData.email });
+      } catch { /* fall through to local */ }
+    }
+
+    // Always sync localStorage
     const storedUser = JSON.parse(localStorage.getItem("parampare_user") || "{}");
-    const updatedUser = {
-      ...storedUser,
-      fullName: editData.fullName,
-      email: editData.email,
-      phone: editData.phone,
-    };
+    const updatedUser = { ...storedUser, fullName: editData.fullName, email: editData.email, phone: editData.phone };
     localStorage.setItem("parampare_user", JSON.stringify(updatedUser));
     setUserData(editData);
     setIsEditing(false);
-
-    toast({
-      title: "Profile Updated",
-      description: "Your account details have been saved successfully.",
-    });
+    toast({ title: "Profile Updated", description: "Your account details have been saved successfully." });
   };
 
   const handleCancel = () => {

@@ -18,7 +18,7 @@ const SwitchAccount = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [otpResponseData, setOtpResponseData] = useState<any>(null);
 
-  const API_URL = import.meta.env.VITE_API_URL || "https://paramparebackend.vercel.app";
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
   const handleGetOTP = async () => {
     if (!/^[0-9]{10}$/.test(phone)) {
