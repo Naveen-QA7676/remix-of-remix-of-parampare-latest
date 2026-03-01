@@ -8,6 +8,7 @@ import Footer from "@/components/layout/Footer";
 
 interface Order {
   id: string;
+  _id?: string;
   date: string;
   items: any[];
   address: any;
@@ -111,29 +112,32 @@ const MyOrders = () => {
       if (token) {
         try {
           const res = await apiClient.get("/orders/my");
-          const raw = res.data.data || [];
+          const raw = res.data.data || res.data || [];
           const mapped: Order[] = raw.map((o: any) => ({
-            id: o.orderId || o._id,
-            date: o.createdAt,
+            id: o.orderId || o.id,
+            _id: o._id || o.id,
+            date: o.createdAt || o.date,
             items: (o.items || []).map((i: any) => ({
-              id: i.product || i._id,
+              id: i.product || i.productId || i._id,
               name: i.name,
               image: i.image || "",
               price: i.price,
               quantity: i.quantity,
             })),
             address: o.shippingAddress,
-            status: o.status,
-            paymentMethod: o.paymentMethod,
-            subtotal: o.subtotal,
-            deliveryCharge: o.deliveryCharge,
-            total: o.totalAmount,
-            estimatedDelivery: o.estimatedDelivery,
+            status: o.status || "Order Confirmed",
+            paymentMethod: o.paymentMethod || "Pay on Delivery",
+            subtotal: o.subtotal || o.totalAmount,
+            deliveryCharge: o.deliveryCharge || 0,
+            total: o.totalAmount || o.total,
+            estimatedDelivery: o.estimatedDelivery || new Date(new Date(o.createdAt).getTime() + 7 * 24 * 60 * 60 * 1000).toISOString(),
             trackingNumber: o.trackingNumber,
           }));
           setOrders(mapped);
           return;
-        } catch { /* fall through to localStorage */ }
+        } catch (err) {
+          console.error("Load orders failed:", err);
+        }
       }
       // localStorage fallback
       const savedOrders = JSON.parse(localStorage.getItem("orders") || "[]");
@@ -238,7 +242,7 @@ const MyOrders = () => {
                 <div className="text-right">
                   <p className="text-muted-foreground">ORDER # {order.id}</p>
                   <Link
-                    to={`/orders/${order.id}`}
+                    to={`/orders/${order._id || order.id}`}
                     className="text-gold hover:underline text-sm"
                   >
                     View order details

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Phone, Home, Eye, EyeOff, Mail, Lock, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import apiClient from "@/lib/apiClient";
 
 type LoginMode = "password" | "otp";
 
@@ -20,7 +21,6 @@ const Login = () => {
   const { toast } = useToast();
 
   const returnTo = location.state?.returnTo || "/";
-  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
   const validatePasswordLogin = () => {
     const newErrors: Record<string, string> = {};
@@ -61,27 +61,12 @@ const Login = () => {
       setIsLoading(true);
       try {
         // 1. Password Login
-        const response = await fetch(`${API_URL}/api/auth/login`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            email: email,
-            password: password,
-          }),
+        const response = await apiClient.post("/auth/login", {
+          email: email,
+          password: password,
         });
 
-        const data = await response.json();
-
-        if (response.status === 401 || response.status === 400 || !response.ok) {
-           // Handle specific auth errors
-           if (data.message === "Invalid credentials" || data.message === "Incorrect password") {
-             setErrors(prev => ({ ...prev, password: "Incorrect password. Please try again." }));
-             throw new Error("Incorrect password"); // Specific error to stop flow but handled in catch
-           }
-           throw new Error(data.message || "Login failed");
-        }
+        const data = response.data;
 
         // Store token — key must match apiClient.ts interceptor
         const token = data.token;
@@ -89,15 +74,10 @@ const Login = () => {
         localStorage.setItem("isLoggedIn", "true");
 
         // 2. Fetch User Details
-        const userDetailsResponse = await fetch(`${API_URL}/api/auth/userDetails`, {
-          method: "GET",
-          headers: {
-            "Authorization": `Bearer ${token}`,
-          },
-        });
+        const userDetailsResponse = await apiClient.get("/auth/userDetails");
 
-        if (userDetailsResponse.ok) {
-           const responseJson = await userDetailsResponse.json();
+        if (userDetailsResponse.status === 200) {
+           const responseJson = userDetailsResponse.data;
            const userData = responseJson.data || responseJson;
            const userToStore = {
              email: userData.email,
@@ -118,6 +98,9 @@ const Login = () => {
           description: "Welcome back to Parampare",
         });
 
+        // Notify hooks to refresh
+        window.dispatchEvent(new Event("loginSuccess"));
+
         navigate(returnTo || "/");
 
       } catch (error: any) {
@@ -136,22 +119,12 @@ const Login = () => {
     if (validateOtpLogin()) {
       setIsLoading(true);
       try {
-        const response = await fetch(`${API_URL}/api/auth/send-otp`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            mobile: phone,
-            type: "login"
-          }),
+        const response = await apiClient.post("/auth/send-otp", {
+          mobile: phone,
+          type: "login"
         });
 
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(data.message || "Failed to send OTP");
-        }
+        const data = response.data;
 
         toast({
           title: "OTP Sent",

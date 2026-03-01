@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { Heart, Star, Filter, X, PackageX, Loader2 } from "lucide-react";
+import { Heart, Star, Filter, X, PackageX, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -47,6 +47,11 @@ const Products = () => {
   const [searchParams] = useSearchParams();
   const category = searchParams.get("category") || "All Sarees";
   const search = searchParams.get("search") || "";
+  const occasionParam = searchParams.get("occasion");
+  const fabricParam = searchParams.get("fabric");
+  const colorParam = searchParams.get("color");
+  const weaveParam = searchParams.get("weave");
+  const filterParam = searchParams.get("filter"); // e.g., 'new', 'sale'
   
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -56,8 +61,24 @@ const Products = () => {
   const [selectedFilters, setSelectedFilters] = useState<Record<string, string[]>>({});
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 20000]);
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(24);
   const { isInWishlist, toggleWishlist } = useWishlist();
   const { toast } = useToast();
+
+  // Sync URL params to local filters state
+  useEffect(() => {
+    const newFilters: Record<string, string[]> = {};
+    if (occasionParam) newFilters.occasion = [occasionParam];
+    if (fabricParam) newFilters.fabric = [fabricParam];
+    if (colorParam) newFilters.color = [colorParam];
+    if (weaveParam) newFilters.weave = [weaveParam];
+    
+    if (filterParam === 'new') setSortBy('new');
+    
+    setSelectedFilters(newFilters);
+  }, [occasionParam, fabricParam, colorParam, weaveParam, filterParam]);
 
   // Fetch products from API
   useEffect(() => {
@@ -69,6 +90,8 @@ const Products = () => {
           search,
           minPrice: priceRange[0],
           maxPrice: priceRange[1],
+          page: currentPage,
+          limit: itemsPerPage,
           sort: sortBy === 'price-asc' ? 'price_asc' : 
                 sortBy === 'price-desc' ? 'price_desc' : 
                 sortBy === 'rating' ? 'rating_desc' : 
@@ -94,9 +117,11 @@ const Products = () => {
           }));
           setProducts(mappedProducts);
           setTotalCount(response.count || mappedProducts.length);
+          setTotalPages(response.totalPages || 1);
         } else {
           setProducts([]);
           setTotalCount(0);
+          setTotalPages(1);
         }
       } catch (error) {
         console.error("Failed to load products:", error);
@@ -111,9 +136,33 @@ const Products = () => {
     };
 
     loadProducts();
-  }, [category, search, sortBy, selectedFilters, priceRange]);
+  }, [category, search, sortBy, selectedFilters, priceRange, currentPage, itemsPerPage]);
 
-  const filteredAndSortedProducts = products;
+  // Reset to page 1 when filters or limits change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [category, search, sortBy, selectedFilters, priceRange, itemsPerPage]);
+
+  const filteredAndSortedProducts = useMemo(() => {
+    if (!search.trim()) return products;
+    
+    const searchWords = search.toLowerCase().trim().split(/\s+/);
+    return products.filter(product => {
+      const name = product.name.toLowerCase();
+      const description = (product.description || "").toLowerCase();
+      const tags = (product.badges || []).map(b => b.toLowerCase());
+      
+      // Match if all search words are present in either name, description or tags (AND logic)
+      // or match if any word is present (OR logic)
+      // The user expects "multi-word searches should return relevant results"
+      // Let's implement OR mapping but prioritized by how many words match
+      return searchWords.some(word => 
+        name.includes(word) || 
+        description.includes(word) || 
+        tags.some(t => t.includes(word))
+      );
+    });
+  }, [products, search]);
 
   const handleFilterChange = (key: string, value: string, checked: boolean) => {
     setSelectedFilters((prev) => {
@@ -221,20 +270,42 @@ const Products = () => {
                 </p>
               </div>
 
-              {/* Sort By - Top Right */}
-              <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger className="w-[200px] bg-card">
-                  <span className="text-muted-foreground mr-2">Sort by:</span>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-card border-border z-50">
-                  {sortOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="flex items-center gap-3">
+                {/* Items Per Page Selector */}
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground whitespace-nowrap">Show:</span>
+                  <Select 
+                    value={itemsPerPage.toString()} 
+                    onValueChange={(val) => setItemsPerPage(parseInt(val))}
+                  >
+                    <SelectTrigger className="w-[80px] h-9 bg-card">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-card border-border z-[100]">
+                      {[12, 24, 36, 60, 96].map((limit) => (
+                        <SelectItem key={limit} value={limit.toString()}>
+                          {limit}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Sort By - Top Right */}
+                <Select value={sortBy} onValueChange={setSortBy}>
+                  <SelectTrigger className="w-[180px] h-9 bg-card">
+                    <span className="text-muted-foreground mr-2">Sort by:</span>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-card border-border z-[100]">
+                    {sortOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             {/* Active Filter Chips */}
@@ -289,10 +360,51 @@ const Products = () => {
               </div>
             ) : (
               /* Product Grid */
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
-                {filteredAndSortedProducts.map((product) => (
-                  <ProductCard key={product.id} product={product} />
-                ))}
+              <div className="space-y-12">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
+                  {filteredAndSortedProducts.map((product) => (
+                    <ProductCard key={product.id} product={product} />
+                  ))}
+                </div>
+
+                {/* Pagination UI */}
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-center gap-2 pt-8">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                      disabled={currentPage === 1}
+                      className="rounded-full shadow-sm"
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                    
+                    <div className="flex items-center gap-1">
+                      {[...Array(totalPages)].map((_, i) => (
+                        <Button
+                          key={i + 1}
+                          variant={currentPage === i + 1 ? "default" : "ghost"}
+                          size="sm"
+                          onClick={() => setCurrentPage(i + 1)}
+                          className={`w-9 h-9 rounded-full ${currentPage === i + 1 ? "bg-gold text-foreground" : ""}`}
+                        >
+                          {i + 1}
+                        </Button>
+                      ))}
+                    </div>
+
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                      disabled={currentPage === totalPages}
+                      className="rounded-full shadow-sm"
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
               </div>
             )}
           </div>

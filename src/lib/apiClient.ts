@@ -2,9 +2,14 @@ import axios from 'axios';
 
 // Use relative URL so Vite proxy handles it (avoids CORS in dev)
 // In production, set VITE_API_URL env var and the proxy isn't needed
-const API_BASE = import.meta.env.VITE_API_URL
-  ? `${import.meta.env.VITE_API_URL}/api`
-  : '/api';
+const VITE_API_URL = import.meta.env.VITE_API_URL;
+const API_BASE = import.meta.env.DEV 
+  ? '/api' 
+  : (VITE_API_URL ? `${VITE_API_URL.replace(/\/$/, '')}/api` : '/api');
+
+if (import.meta.env.DEV) {
+  console.log('Vite Proxy Enabled. API_BASE:', API_BASE);
+}
 
 const apiClient = axios.create({
   baseURL: API_BASE,

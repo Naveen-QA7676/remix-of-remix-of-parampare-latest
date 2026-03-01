@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { MapPin, Plus, Check, ArrowLeft } from "lucide-react";
+import { MapPin, Plus, Check, ArrowLeft, CreditCard, Banknote } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import TopUtilityHeader from "@/components/layout/TopUtilityHeader";
 import MainHeader from "@/components/layout/MainHeader";
 import Footer from "@/components/layout/Footer";
 import apiClient from "@/lib/apiClient";
+import { useToast } from "@/hooks/use-toast";
+import { useCart } from "@/hooks/useCart";
 
 interface Address {
   id: string;
@@ -27,9 +29,14 @@ const Checkout = () => {
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [selectedAddress, setSelectedAddress] = useState<string>("");
   const [showAddForm, setShowAddForm] = useState(false);
-  const [cartItems, setCartItems] = useState<any[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [placingOrder, setPlacingOrder] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<"Online" | "COD">("Online");
+  const { toast } = useToast();
+  
+  const { cartItems, subtotal, cartCount, loading } = useCart();
+  const deliveryCharge = subtotal >= 999 ? 0 : 99;
+  const total = subtotal + deliveryCharge;
 
   const [formData, setFormData] = useState<Omit<Address, "id">>({
     fullName: "", mobile: "", house: "", street: "",
@@ -40,9 +47,7 @@ const Checkout = () => {
     const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
     if (!isLoggedIn) { navigate("/login", { state: { returnTo: "/checkout" } }); return; }
 
-    const storedCart = JSON.parse(localStorage.getItem("cart") || "[]");
-    if (storedCart.length === 0) { navigate("/cart"); return; }
-    setCartItems(storedCart);
+    if (!loading && cartItems.length === 0) { navigate("/cart"); return; }
 
     const savedAddresses = JSON.parse(localStorage.getItem("addresses") || "[]");
     setAddresses(savedAddresses);
@@ -52,7 +57,7 @@ const Checkout = () => {
     } else {
       setShowAddForm(true);
     }
-  }, [navigate]);
+  }, [navigate, cartItems, loading]);
 
   const handleChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -84,59 +89,119 @@ const Checkout = () => {
     setFormData({ fullName: "", mobile: "", house: "", street: "", city: "", state: "", pincode: "", landmark: "", alternatePhone: "" });
   };
 
-  const handlePlaceOrder = async () => {
-    if (!selectedAddress) return;
-    const selectedAddr = addresses.find((a) => a.id === selectedAddress);
-
-    setPlacingOrder(true);
+  const handleRazorpayPayment = async (selectedAddr: Address) => {
     try {
-      // Build items in the shape the backend expects
-      const orderItems = cartItems.map((item: any) => ({
-        productId: item.id,
-        name: item.name,
-        image: item.image || "",
-        quantity: item.quantity,
-        price: item.price,
-      }));
-
-      const res = await apiClient.post("/orders", {
-        items: orderItems,
-        shippingAddress: selectedAddr,
-        paymentMethod: "Pay on Delivery",
+      // 1. Create Razorpay Order on backend
+      const { data: { data: rzpOrder } } = await apiClient.post("/payment/create-order", {
+        amount: total,
+        receipt: `receipt_${Date.now()}`
       });
 
-      // Clear cart (backend already cleared DB cart)
-      localStorage.removeItem("cart");
-      window.dispatchEvent(new Event("cartUpdated"));
+      // 2. Open Razorpay Checkout
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY,
+        amount: rzpOrder.amount,
+        currency: rzpOrder.currency,
+        name: "Parampare",
+        description: "Authentic Ilkal Sarees",
+        order_id: rzpOrder.id,
+        handler: async (response: any) => {
+          try {
+            // 3. Verify Payment
+            await apiClient.post("/payment/verify", {
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature
+            });
 
-      navigate("/order-confirmation", {
-        state: { orderId: res.data.data.orderId || res.data.data._id },
-      });
-    } catch (err: any) {
-      // Fallback: save to localStorage if API fails
-      const orderDate = new Date();
-      const orderId = `PAR-ORD-${orderDate.toISOString().slice(0, 10).replace(/-/g, "")}-${String(Math.floor(Math.random() * 100000)).padStart(5, "0")}`;
-      const order = {
-        id: orderId, date: orderDate.toISOString(), items: cartItems,
-        address: selectedAddr, status: "Order Confirmed", paymentMethod: "Pay on Delivery",
-        subtotal: cartItems.reduce((s: number, i: any) => s + i.price * i.quantity, 0),
-        deliveryCharge: 0,
-        total: cartItems.reduce((s: number, i: any) => s + i.price * i.quantity, 0),
-        estimatedDelivery: new Date(orderDate.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+            // 4. Place Order in DB
+            await completeOrder(selectedAddr, "Online");
+          } catch (err) {
+            console.error("Payment verification or order placement failed:", err);
+            toast({ title: "Order Failed", description: "Payment verified but order creation failed. Please contact support.", variant: "destructive" });
+          }
+        },
+        prefill: {
+          name: selectedAddr.fullName,
+          contact: selectedAddr.mobile,
+        },
+        theme: { color: "#C5A059" },
       };
-      const existing = JSON.parse(localStorage.getItem("orders") || "[]");
-      localStorage.setItem("orders", JSON.stringify([order, ...existing]));
-      localStorage.removeItem("cart");
-      window.dispatchEvent(new Event("cartUpdated"));
-      navigate("/order-confirmation", { state: { orderId: order.id } });
+
+      const rzp = new (window as any).Razorpay(options);
+      rzp.on('payment.failed', function (response: any) {
+        toast({ title: "Payment Failed", description: response.error.description, variant: "destructive" });
+      });
+      rzp.open();
+    } catch (err) {
+      console.error("Razorpay initiation failed:", err);
+      toast({ title: "Payment Error", description: "Could not initiate payment. Please try again or use COD.", variant: "destructive" });
     } finally {
       setPlacingOrder(false);
     }
   };
 
-  const subtotal = cartItems.reduce((s, i) => s + i.price * i.quantity, 0);
-  const deliveryCharge = subtotal >= 999 ? 0 : 99;
-  const total = subtotal + deliveryCharge;
+  const completeOrder = async (selectedAddr: Address, method: "Online" | "COD") => {
+    const orderItems = cartItems.map((item: any) => ({
+      productId: item.id,
+      name: item.name,
+      image: item.image || "",
+      quantity: item.quantity,
+      price: item.price,
+    }));
+
+    const res = await apiClient.post("/orders", {
+      items: orderItems,
+      shippingAddress: selectedAddr,
+      paymentMethod: method === "Online" ? "Online Payment" : "Cash on Delivery",
+    });
+
+    localStorage.removeItem("cart");
+    window.dispatchEvent(new Event("cartUpdated"));
+
+    const orderData = res.data.data || res.data;
+    const finalOrder = {
+      id: orderData.orderId || orderData._id || orderData.id,
+      items: orderItems,
+      address: selectedAddr,
+      date: new Date().toISOString(),
+      status: "Order Confirmed",
+      paymentMethod: method === "Online" ? "Online Payment" : "Cash on Delivery",
+      total: total,
+      subtotal: subtotal,
+      deliveryCharge: deliveryCharge,
+      estimatedDelivery: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+    };
+
+    sessionStorage.setItem("lastOrderId", finalOrder.id);
+
+    navigate("/order-confirmation", {
+      state: { orderId: finalOrder.id, order: finalOrder },
+      replace: true
+    });
+  };
+
+  const handlePlaceOrder = async () => {
+    if (!selectedAddress) return;
+    const selectedAddr = addresses.find((a) => a.id === selectedAddress);
+    if (!selectedAddr) return;
+
+    setPlacingOrder(true);
+    
+    if (paymentMethod === "Online") {
+      await handleRazorpayPayment(selectedAddr);
+    } else {
+      try {
+        await completeOrder(selectedAddr, "COD");
+      } catch (err: any) {
+        console.error("Place order failed:", err);
+        toast({ title: "Order Failed", description: "Could not place order. Please try again.", variant: "destructive" });
+      } finally {
+        setPlacingOrder(false);
+      }
+    }
+  };
+
 
   return (
     <div className="min-h-screen bg-background font-body">
@@ -244,6 +309,39 @@ const Checkout = () => {
                 </div>
               )}
             </div>
+
+            {/* Payment Method Selector */}
+            <div className="bg-card rounded-xl p-6 border border-border/50 shadow-soft">
+              <h2 className="text-xl font-display font-semibold flex items-center gap-2 mb-6">
+                <CreditCard className="h-5 w-5 text-gold" />Payment Method
+              </h2>
+              <div className="grid md:grid-cols-2 gap-4">
+                <label className={`flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${paymentMethod === "Online" ? "border-gold bg-gold/5" : "border-border hover:border-gold/50"}`}>
+                  <input type="radio" name="payment" checked={paymentMethod === "Online"} onChange={() => setPaymentMethod("Online")} className="w-4 h-4 accent-gold" />
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-gold/10 flex items-center justify-center text-gold">
+                      <CreditCard className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-sm">Online Payment</p>
+                      <p className="text-xs text-muted-foreground">Razorpay (Cards, UPI, Netbanking)</p>
+                    </div>
+                  </div>
+                </label>
+                <label className={`flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${paymentMethod === "COD" ? "border-gold bg-gold/5" : "border-border hover:border-gold/50"}`}>
+                  <input type="radio" name="payment" checked={paymentMethod === "COD"} onChange={() => setPaymentMethod("COD")} className="w-4 h-4 accent-gold" />
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-gold/10 flex items-center justify-center text-gold">
+                      <Banknote className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-sm">Cash on Delivery</p>
+                      <p className="text-xs text-muted-foreground">Pay when you receive the order</p>
+                    </div>
+                  </div>
+                </label>
+              </div>
+            </div>
           </div>
 
           {/* Order Summary */}
@@ -274,7 +372,7 @@ const Checkout = () => {
                   <span>Total</span><span>₹{total.toLocaleString()}</span>
                 </div>
               </div>
-              <p className="text-sm text-muted-foreground mt-4 mb-4">Payment: <span className="font-medium text-foreground">Pay on Delivery</span></p>
+              <p className="text-sm text-muted-foreground mt-4 mb-4">Payment: <span className="font-medium text-foreground">{paymentMethod === "Online" ? "Online Payment" : "Cash on Delivery"}</span></p>
               <Button onClick={handlePlaceOrder} disabled={!selectedAddress || showAddForm || placingOrder} className="w-full h-12 bg-gold hover:bg-gold/90 text-foreground font-medium">
                 {placingOrder ? "Placing Order..." : "Place Order"}
               </Button>

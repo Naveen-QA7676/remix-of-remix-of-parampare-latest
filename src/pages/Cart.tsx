@@ -6,96 +6,17 @@ import TopUtilityHeader from "@/components/layout/TopUtilityHeader";
 import MainHeader from "@/components/layout/MainHeader";
 import Footer from "@/components/layout/Footer";
 import apiClient from "@/lib/apiClient";
+import { useToast } from "@/hooks/use-toast";
 
-interface CartItem {
-  id: string;
-  name: string;
-  image: string;
-  price: number;
-  originalPrice?: number;
-  quantity: number;
-}
+import { useCart } from "@/hooks/useCart";
 
 const isLoggedIn = () =>
   !!(localStorage.getItem("token") && localStorage.getItem("isLoggedIn") === "true");
 
 const Cart = () => {
   const navigate = useNavigate();
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
-  const [loading, setLoading] = useState(false);
+  const { cartItems, loading, updateQuantity, removeFromCart: removeItem, subtotal } = useCart();
 
-  // ── Load cart ────────────────────────────────────────────────────────────────
-  const fetchCart = async () => {
-    if (isLoggedIn()) {
-      try {
-        setLoading(true);
-        const res = await apiClient.get("/cart");
-        const rawItems = res.data.data?.items || res.data.items || [];
-        const items: CartItem[] = rawItems.map((i: any) => ({
-          id: i.product?._id || i.product,
-          name: i.product?.name || i.name,
-          image: i.product?.images?.[0] || i.image || "",
-          price: i.product?.price || i.price,
-          originalPrice: i.product?.originalPrice || i.originalPrice,
-          quantity: i.quantity,
-        }));
-        setCartItems(items);
-        // Sync to localStorage for Checkout to read
-        localStorage.setItem("cart", JSON.stringify(items));
-      } catch {
-        loadLocalCart();
-      } finally {
-        setLoading(false);
-      }
-    } else {
-      loadLocalCart();
-    }
-  };
-
-  const loadLocalCart = () => {
-    const stored = JSON.parse(localStorage.getItem("cart") || "[]");
-    setCartItems(stored);
-  };
-
-  useEffect(() => { fetchCart(); }, []);
-
-  // ── Sync helpers ──────────────────────────────────────────────────────────────
-  const dispatchCartUpdate = () => window.dispatchEvent(new Event("cartUpdated"));
-
-  const syncLocal = (items: CartItem[]) => {
-    localStorage.setItem("cart", JSON.stringify(items));
-    dispatchCartUpdate();
-  };
-
-  // ── Update Quantity ────────────────────────────────────────────────────────────
-  const updateQuantity = async (id: string, newQty: number) => {
-    if (newQty < 1 || newQty > 5) return;
-    const updated = cartItems.map((i) => (i.id === id ? { ...i, quantity: newQty } : i));
-    setCartItems(updated);
-    syncLocal(updated);
-
-    if (isLoggedIn()) {
-      try {
-        await apiClient.put("/cart/update", { productId: id, quantity: newQty });
-      } catch { /* ignore — local state already updated */ }
-    }
-  };
-
-  // ── Remove Item ────────────────────────────────────────────────────────────────
-  const removeItem = async (id: string) => {
-    const updated = cartItems.filter((i) => i.id !== id);
-    setCartItems(updated);
-    syncLocal(updated);
-
-    if (isLoggedIn()) {
-      try {
-        await apiClient.delete("/cart/remove", { data: { productId: id } });
-      } catch { /* ignore */ }
-    }
-  };
-
-  // ── Totals ─────────────────────────────────────────────────────────────────────
-  const subtotal = cartItems.reduce((s, i) => s + i.price * i.quantity, 0);
   const deliveryCharge = subtotal >= 999 ? 0 : 99;
   const totalAmount = subtotal + deliveryCharge;
 

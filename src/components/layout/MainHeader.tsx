@@ -1,7 +1,7 @@
 import { Search, Heart, User, ShoppingBag, Menu, X, LogOut, MapPin, Package, RefreshCw, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import {
   Tooltip,
@@ -9,16 +9,25 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
   NavigationMenu,
   NavigationMenuContent,
   NavigationMenuItem,
   NavigationMenuLink,
   NavigationMenuList,
   NavigationMenuTrigger,
+  NavigationMenuViewport,
 } from "@/components/ui/navigation-menu";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { fetchCategoryTree, Category } from "@/lib/api";
+import apiClient from "@/lib/apiClient";
+import { useCart } from "@/hooks/useCart";
+import { useWishlist } from "@/hooks/useWishlist";
 // import logoImage from "@/assets/logo.jpg";
 
 const MainHeader = () => {
@@ -26,11 +35,13 @@ const MainHeader = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userName, setUserName] = useState("");
-  const [cartCount, setCartCount] = useState(0);
-  const [wishlistCount, setWishlistCount] = useState(0);
   const [mobileDropdown, setMobileDropdown] = useState<string | null>(null);
   const [accountHovered, setAccountHovered] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
+  
+  const { cartCount, cartItems, addToCart, subtotal } = useCart();
+  const { wishlistCount, wishlist: wishlistItems } = useWishlist();
+
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
@@ -50,12 +61,9 @@ const MainHeader = () => {
             setUserName("User");
           }
         }
+      } else {
+        setUserName("");
       }
-      
-      const cart = JSON.parse(localStorage.getItem("cart") || "[]");
-      setCartCount(cart.reduce((sum: number, item: any) => sum + (item.quantity || 1), 0));
-      const wishlist = JSON.parse(localStorage.getItem("wishlist") || "[]");
-      setWishlistCount(wishlist.length);
     };
 
     const loadCategories = async () => {
@@ -74,11 +82,13 @@ const MainHeader = () => {
     window.addEventListener("storage", checkAuth);
     window.addEventListener("cartUpdated", checkAuth);
     window.addEventListener("wishlistUpdated", checkAuth);
+    window.addEventListener("loginSuccess", checkAuth);
     
     return () => {
       window.removeEventListener("storage", checkAuth);
       window.removeEventListener("cartUpdated", checkAuth);
       window.removeEventListener("wishlistUpdated", checkAuth);
+      window.removeEventListener("loginSuccess", checkAuth);
     };
   }, []);
 
@@ -88,10 +98,13 @@ const MainHeader = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("cart");
     localStorage.removeItem("wishlist");
+    
+    // Notify hooks to clear state
+    window.dispatchEvent(new Event("cartUpdated"));
+    window.dispatchEvent(new Event("wishlistUpdated"));
+    
     setIsLoggedIn(false);
     setUserName("");
-    setCartCount(0);
-    setWishlistCount(0);
     toast({
       title: "Signed Out",
       description: "You have been successfully signed out.",
@@ -120,6 +133,11 @@ const MainHeader = () => {
     navigate("/wishlist");
   };
 
+  const addItemToCart = async (item: any) => {
+    await addToCart(item);
+    toast({ title: "Added to cart!", description: `${item.name} has been added to your cart.` });
+  };
+
   const handleAccountAction = (path: string) => {
     if (!isLoggedIn) {
       navigate("/login", { state: { returnTo: path } });
@@ -136,8 +154,14 @@ const MainHeader = () => {
     }
   };
 
-  const simpleMenuItems = [
-    { label: "SALE", href: "/products?filter=sale", highlight: true },
+  interface MenuItem {
+    label: string;
+    href: string;
+    onClick?: (e: React.MouseEvent) => void;
+    highlight?: boolean;
+  }
+
+  const simpleMenuItems: MenuItem[] = [
     { label: "BESTSELLERS", href: "/#bestsellers", onClick: handleBestsellersClick },
     { label: "NEW ARRIVALS", href: "/products?filter=new" },
   ];
@@ -200,7 +224,7 @@ const MainHeader = () => {
                                 {sub.name}
                               </Link>
                             </NavigationMenuLink>
-                          </div>
+                        </div>
                         )) || (
                           <div className="text-sm text-muted-foreground">Loading categories...</div>
                         )}
@@ -287,13 +311,12 @@ const MainHeader = () => {
               </Button>
             </form>
             
-            <Tooltip>
-              <TooltipTrigger asChild>
+            <Popover>
+              <PopoverTrigger asChild>
                 <Button 
                   variant="ghost" 
                   size="icon" 
                   className="relative text-foreground/70 hover:text-foreground hover:bg-transparent"
-                  onClick={handleWishlistClick}
                 >
                   <Heart className="h-5 w-5" strokeWidth={1.5} />
                   {wishlistCount > 0 && (
@@ -302,9 +325,57 @@ const MainHeader = () => {
                     </span>
                   )}
                 </Button>
-              </TooltipTrigger>
-              <TooltipContent>Wishlist</TooltipContent>
-            </Tooltip>
+              </PopoverTrigger>
+              <PopoverContent className="w-80 p-0" align="end">
+                <div className="p-4 border-b border-border/50">
+                  <h3 className="font-semibold text-sm">My Wishlist ({wishlistCount})</h3>
+                </div>
+                <div className="max-h-[300px] overflow-y-auto p-2">
+                  {wishlistItems.length === 0 ? (
+                    <div className="py-8 text-center text-sm text-muted-foreground">
+                      Your wishlist is empty
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {wishlistItems.slice(0, 5).map((item) => (
+                        <div 
+                          key={item.id} 
+                          className="flex gap-3 p-2 hover:bg-secondary rounded-lg transition-colors group cursor-pointer"
+                          onClick={() => navigate(`/product/${item.id}`)}
+                        >
+                          <div className="w-12 h-16 rounded overflow-hidden bg-secondary flex-shrink-0">
+                            <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h4 className="text-xs font-medium truncate group-hover:text-gold transition-colors">{item.name}</h4>
+                            <p className="text-xs font-semibold mt-1 text-foreground">₹{item.price.toLocaleString()}</p>
+                          </div>
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-8 w-8 self-center text-muted-foreground hover:text-gold hover:bg-background/50"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              addItemToCart(item);
+                            }}
+                          >
+                            <ShoppingBag className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <div className="p-3 border-t border-border/50">
+                  <Button 
+                    className="w-full text-xs h-9 bg-gold hover:bg-gold/90 text-foreground"
+                    onClick={() => navigate("/wishlist")}
+                  >
+                    View Full Wishlist
+                  </Button>
+                </div>
+              </PopoverContent>
+            </Popover>
             
             {/* Amazon-style Account Dropdown */}
             <div 
@@ -380,13 +451,12 @@ const MainHeader = () => {
             </div>
             
             {/* Cart */}
-            <Tooltip>
-              <TooltipTrigger asChild>
+            <Popover>
+              <PopoverTrigger asChild>
                 <Button 
                   variant="ghost" 
                   size="icon" 
                   className="relative text-foreground/70 hover:text-foreground hover:bg-transparent"
-                  onClick={() => navigate("/cart")}
                 >
                   <ShoppingBag className="h-5 w-5" strokeWidth={1.5} />
                   {cartCount > 0 && (
@@ -395,9 +465,49 @@ const MainHeader = () => {
                     </span>
                   )}
                 </Button>
-              </TooltipTrigger>
-              <TooltipContent>Cart</TooltipContent>
-            </Tooltip>
+              </PopoverTrigger>
+              <PopoverContent className="w-80 p-0" align="end">
+                <div className="p-4 border-b border-border/50">
+                  <h3 className="font-semibold text-sm">Shopping Cart ({cartCount})</h3>
+                </div>
+                <div className="max-h-[300px] overflow-y-auto p-2">
+                  {cartItems.length === 0 ? (
+                    <div className="py-8 text-center text-sm text-muted-foreground">
+                      Your cart is empty
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {cartItems.map((item) => (
+                        <div key={item.id} className="flex gap-3 p-2 hover:bg-secondary rounded-lg transition-colors">
+                          <div className="w-12 h-16 rounded overflow-hidden bg-secondary flex-shrink-0">
+                            <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h4 className="text-xs font-medium truncate">{item.name}</h4>
+                            <p className="text-[10px] text-muted-foreground mt-0.5">Qty: {item.quantity}</p>
+                            <p className="text-xs font-semibold mt-1">₹{(item.price * item.quantity).toLocaleString()}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                {cartItems.length > 0 && (
+                  <div className="p-3 border-t border-border/50 bg-secondary/30">
+                    <div className="flex justify-between items-center mb-3 px-1">
+                      <span className="text-xs text-muted-foreground">Subtotal</span>
+                      <span className="text-sm font-bold">₹{subtotal.toLocaleString()}</span>
+                    </div>
+                    <Button 
+                      className="w-full text-xs h-9 bg-gold hover:bg-gold/90 text-foreground"
+                      onClick={() => navigate("/cart")}
+                    >
+                      Checkout Now
+                    </Button>
+                  </div>
+                )}
+              </PopoverContent>
+            </Popover>
           </div>
         </div>
 

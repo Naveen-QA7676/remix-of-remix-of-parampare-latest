@@ -12,12 +12,14 @@ import { useToast } from "@/hooks/use-toast";
 import { useWishlist } from "@/hooks/useWishlist";
 import { fetchProductById, Product } from "@/lib/api";
 import apiClient from "@/lib/apiClient";
+import { useCart } from "@/hooks/useCart";
 
 const ProductDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
   const { isInWishlist, toggleWishlist } = useWishlist();
+  const { addToCart } = useCart();
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
   const [isZooming, setIsZooming] = useState(false);
@@ -81,26 +83,12 @@ const ProductDetail = () => {
     setZoomPosition({ x, y });
   };
 
-  const dispatchCartUpdate = () => {
-    window.dispatchEvent(new Event("cartUpdated"));
-  };
 
   const handleAddToCart = async () => {
-    const image = (product.images && product.images.length > 0) ? product.images[0] : "/placeholder.svg";
-    const token = localStorage.getItem("token");
-    if (token) {
-      try {
-        await apiClient.post("/cart/add", { productId: product.id, quantity });
-      } catch { /* ignore, sync local below */ }
+    const wasAdded = await addToCart(product, quantity);
+    if (wasAdded) {
+      toast({ title: "Added to cart!", description: `${product.name} has been added to your cart.` });
     }
-    // Always sync localStorage so Cart page can read it
-    const cart = JSON.parse(localStorage.getItem("cart") || "[]");
-    const existing = cart.find((i: any) => i.id === product.id);
-    if (existing) existing.quantity = Math.min(existing.quantity + quantity, 5);
-    else cart.push({ ...product, quantity, image });
-    localStorage.setItem("cart", JSON.stringify(cart));
-    window.dispatchEvent(new Event("cartUpdated"));
-    toast({ title: "Added to cart!", description: `${product.name} has been added to your cart.` });
   };
 
   const handleBuyNow = async () => {
@@ -148,39 +136,15 @@ const ProductDetail = () => {
           <span className="text-foreground">{product.name}</span>
         </nav>
 
-        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12">
-          {/* Left Side - Image Gallery with Flipkart-style layout */}
-          <div className="flex flex-col lg:flex-row gap-4">
-            {/* Thumbnails - Left side on desktop */}
-            <div className="order-2 lg:order-1 flex lg:flex-col gap-3 overflow-x-auto lg:overflow-y-auto lg:max-h-[600px] pb-2 lg:pb-0 lg:pr-2">
-              {(product.images && product.images.length > 0) ? (
-                product.images.map((image, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setSelectedImage(index)}
-                    className={`flex-shrink-0 w-16 h-20 lg:w-20 lg:h-24 rounded-lg overflow-hidden border-2 transition-all ${
-                      selectedImage === index
-                        ? "border-gold ring-2 ring-gold/30"
-                        : "border-transparent hover:border-border"
-                    }`}
-                  >
-                    <img
-                      src={image}
-                      alt={`${product.name} ${index + 1}`}
-                      className="w-full h-full object-cover"
-                    />
-                  </button>
-                ))
-              ) : (
-                <div className="w-20 h-24 rounded-lg bg-secondary border-2 border-border" />
-              )}
-            </div>
-
+        <div className="grid lg:grid-cols-[3.5fr,6.5fr] gap-6 lg:gap-8">
+          {/* Left Side - Image Gallery */}
+          {/* Image Gallery */}
+          <div className="flex flex-col gap-4 w-fit lg:pl-6 mx-auto">
             {/* Main Image with Zoom */}
-            <div className="order-1 lg:order-2 flex-1 flex gap-4">
+            <div className="relative lg:max-h-[480px] w-fit">
               <div
                 ref={imageRef}
-                className="relative aspect-[3/4] rounded-2xl overflow-hidden bg-secondary cursor-zoom-in flex-1"
+                className="relative aspect-[3/4] h-full rounded-2xl overflow-hidden bg-secondary cursor-zoom-in"
                 onMouseMove={handleMouseMove}
                 onMouseEnter={() => setIsZooming(true)}
                 onMouseLeave={() => setIsZooming(false)}
@@ -203,18 +167,43 @@ const ProductDetail = () => {
                 )}
               </div>
 
-              {/* Zoom Panel - Side (Desktop only) */}
+              {/* Zoom Panel - Absolute Positioned to the right of main image on desktop */}
               {isZooming && (
-                <div className="hidden lg:block w-[400px] h-[500px] rounded-2xl overflow-hidden border border-border shadow-xl bg-secondary flex-shrink-0">
+                <div className="hidden lg:block absolute left-[102%] top-0 z-30 w-[400px] h-[500px] rounded-2xl overflow-hidden border border-border shadow-2xl bg-secondary pointer-events-none">
                   <div
                     className="w-full h-full"
                     style={{
                       backgroundImage: `url("${(product.images && product.images.length > 0) ? product.images[selectedImage] : "/placeholder.svg"}")`,
-                      backgroundSize: "250%",
+                      backgroundSize: "180%",
                       backgroundPosition: `${zoomPosition.x}% ${zoomPosition.y}%`,
                     }}
                   />
                 </div>
+              )}
+            </div>
+
+            {/* Thumbnails - Bottom side on all devices. Scrollable row. Fits exactly 4 images then scrolls. */}
+            <div className="flex flex-row gap-3 overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-gold/20 hover:scrollbar-thumb-gold/40 snap-x w-full max-w-[292px] md:max-w-[356px]">
+              {(product.images && product.images.length > 0) ? (
+                product.images.map((image, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setSelectedImage(index)}
+                    className={`flex-shrink-0 w-16 h-20 lg:w-20 lg:h-24 rounded-lg overflow-hidden border-2 transition-all snap-start ${
+                      selectedImage === index
+                        ? "border-gold ring-2 ring-gold/30"
+                        : "border-transparent hover:border-border"
+                    }`}
+                  >
+                    <img
+                      src={image}
+                      alt={`${product.name} ${index + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                  </button>
+                ))
+              ) : (
+                <div className="w-20 h-24 rounded-lg bg-secondary border-2 border-border" />
               )}
             </div>
           </div>
@@ -388,40 +377,41 @@ const ProductDetail = () => {
               <span className="text-xs text-muted-foreground">(Max: 5)</span>
             </div>
 
-            {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row gap-3">
+            {/* Action Buttons & Wishlist */}
+            <div className="space-y-4 max-w-md">
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Button
+                  onClick={handleAddToCart}
+                  variant="outline"
+                  className="flex-1 h-11 gap-2 border-gold text-gold hover:bg-gold hover:text-foreground font-medium"
+                  disabled={!product.inStock}
+                >
+                  <ShoppingBag className="h-5 w-5" />
+                  Add to Cart
+                </Button>
+                <Button
+                  onClick={handleBuyNow}
+                  className="flex-1 h-11 gap-2 bg-gold hover:bg-gold/90 text-foreground font-medium"
+                  disabled={!product.inStock}
+                >
+                  <Zap className="h-5 w-5" />
+                  Buy Now
+                </Button>
+              </div>
+
               <Button
-                onClick={handleAddToCart}
                 variant="outline"
-                className="flex-1 h-12 gap-2 border-gold text-gold hover:bg-gold hover:text-foreground"
-                disabled={!product.inStock}
+                onClick={handleWishlistClick}
+                className="w-full h-11 gap-2 border-muted-foreground/20 hover:border-gold hover:bg-gold/10"
               >
-                <ShoppingBag className="h-5 w-5" />
-                Add to Cart
-              </Button>
-              <Button
-                onClick={handleBuyNow}
-                className="flex-1 h-12 gap-2 bg-gold hover:bg-gold/90 text-foreground"
-                disabled={!product.inStock}
-              >
-                <Zap className="h-5 w-5" />
-                Buy Now
+                <Heart
+                  className={`h-5 w-5 ${
+                    isWishlisted ? "fill-destructive text-destructive" : ""
+                  }`}
+                />
+                {isWishlisted ? "Added to Wishlist" : "Add to Wishlist"}
               </Button>
             </div>
-
-            {/* Wishlist Button */}
-            <Button
-              variant="ghost"
-              onClick={handleWishlistClick}
-              className="w-full gap-2"
-            >
-              <Heart
-                className={`h-5 w-5 ${
-                  isWishlisted ? "fill-destructive text-destructive" : ""
-                }`}
-              />
-              {isWishlisted ? "Added to Wishlist" : "Add to Wishlist"}
-            </Button>
 
             {/* Trust Badges */}
             <div className="grid grid-cols-2 gap-4 pt-4 border-t border-border/50">
@@ -446,7 +436,7 @@ const ProductDetail = () => {
         </div>
 
         {/* Product Description Section */}
-        <div className="mt-12 grid md:grid-cols-2 gap-8">
+        <div id="reviews" className="mt-12 grid md:grid-cols-2 gap-8 border-t border-border/50 pt-12">
           <div className="space-y-4">
             <h2 className="text-xl font-display font-semibold">About the Saree</h2>
             <p className="text-muted-foreground leading-relaxed whitespace-pre-line">
@@ -454,7 +444,22 @@ const ProductDetail = () => {
             </p>
           </div>
           <div className="space-y-4">
-            <h2 className="text-xl font-display font-semibold">Care Instructions</h2>
+            <h2 className="text-xl font-display font-semibold">Customer Reviews</h2>
+            <div className="bg-secondary/30 p-6 rounded-2xl border border-border/50">
+              <div className="flex items-center gap-4 mb-6">
+                <div className="text-4xl font-bold text-foreground">{product.rating}</div>
+                <div>
+                  <div className="flex items-center gap-0.5 mb-1">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} className={`h-4 w-4 ${i < Math.floor(product.rating) ? "fill-gold text-gold" : "text-muted"}`} />
+                    ))}
+                  </div>
+                  <p className="text-sm text-muted-foreground">Based on {product.reviewCount} reviews</p>
+                </div>
+              </div>
+              <p className="text-sm text-muted-foreground italic">"Authentic craftsmanship and beautiful drape. Highly recommended!"</p>
+            </div>
+            <h2 className="text-xl font-display font-semibold mt-8">Care Instructions</h2>
             <ul className="space-y-2">
               {Array.isArray(product.careInstructions) && product.careInstructions.map((instruction, index) => (
                 <li key={index} className="flex items-center gap-2 text-muted-foreground">

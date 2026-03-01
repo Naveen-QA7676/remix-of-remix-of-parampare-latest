@@ -8,7 +8,7 @@ import Footer from "@/components/layout/Footer";
 import BackToTop from "@/components/layout/BackToTop";
 import { useToast } from "@/hooks/use-toast";
 import { useWishlist } from "@/hooks/useWishlist";
-import apiClient from "@/lib/apiClient";
+import { useCart } from "@/hooks/useCart";
 
 const getBadgeColor = (badge: string) => {
   switch (badge) {
@@ -21,34 +21,11 @@ const getBadgeColor = (badge: string) => {
 
 const Wishlist = () => {
   const { wishlist, removeFromWishlist } = useWishlist();
+  const { addToCart } = useCart();
   const { toast } = useToast();
 
-  const addToCart = async (item: typeof wishlist[0]) => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      // Logged in: add via API
-      try {
-        await apiClient.post("/cart/add", { productId: item.id, quantity: 1 });
-        // Sync localStorage for Cart page
-        const cart = JSON.parse(localStorage.getItem("cart") || "[]");
-        const existing = cart.find((c: any) => c.id === item.id);
-        if (existing) existing.quantity = Math.min(existing.quantity + 1, 5);
-        else cart.push({ ...item, quantity: 1 });
-        localStorage.setItem("cart", JSON.stringify(cart));
-        window.dispatchEvent(new Event("cartUpdated"));
-      } catch {
-        // Fall through to local only
-      }
-    } else {
-      // Guest: local only
-      const cart = JSON.parse(localStorage.getItem("cart") || "[]");
-      const existing = cart.find((c: any) => c.id === item.id);
-      if (existing) existing.quantity = Math.min(existing.quantity + 1, 5);
-      else cart.push({ ...item, quantity: 1 });
-      localStorage.setItem("cart", JSON.stringify(cart));
-      window.dispatchEvent(new Event("cartUpdated"));
-    }
-
+  const handleAddToCart = async (item: any) => {
+    await addToCart(item);
     toast({ title: "Added to cart!", description: `${item.name} has been added to your cart.` });
   };
 
@@ -119,7 +96,7 @@ const Wishlist = () => {
                       <span className="text-sm text-muted-foreground line-through">₹{item.originalPrice.toLocaleString()}</span>
                     )}
                   </div>
-                  <Button onClick={() => addToCart(item)} disabled={!item.inStock} className="w-full gap-2 bg-gold hover:bg-gold/90 text-foreground" size="sm">
+                  <Button onClick={() => handleAddToCart(item)} disabled={!item.inStock} className="w-full gap-2 bg-gold hover:bg-gold/90 text-foreground" size="sm">
                     <ShoppingBag className="h-4 w-4" />Add to Cart
                   </Button>
                 </div>

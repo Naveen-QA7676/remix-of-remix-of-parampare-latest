@@ -8,7 +8,14 @@ import ProductCard from "@/components/products/ProductCard";
 import ProductFilters from "@/components/products/ProductFilters";
 import { fetchProducts, fetchCategories, Category, Product as APIProduct } from "@/lib/api";
 import { Button } from "@/components/ui/button";
-import { LayoutGrid, List, SlidersHorizontal, PackageX, Loader2 } from "lucide-react";
+import { LayoutGrid, List, SlidersHorizontal, PackageX, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import Breadcrumbs from "@/components/ui/breadcrumbs";
 import { useToast } from "@/hooks/use-toast";
@@ -29,6 +36,9 @@ const CategoryPage = () => {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [selectedFilters, setSelectedFilters] = useState<Record<string, string[]>>({});
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 20000]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(24);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -62,6 +72,8 @@ const CategoryPage = () => {
         const params: any = {
             minPrice: priceRange[0],
             maxPrice: priceRange[1],
+            page: currentPage,
+            limit: itemsPerPage,
         };
         if (category) params.category = category._id;
         if (subcategory) params.subcategory = subcategory._id;
@@ -83,6 +95,7 @@ const CategoryPage = () => {
             badge: (p.badges && p.badges.length > 0) ? p.badges[0] : undefined
           }));
           setProducts(mappedProducts);
+          setTotalPages(response.totalPages || 1);
         }
       } catch (error) {
         console.error("Failed to load products:", error);
@@ -94,7 +107,12 @@ const CategoryPage = () => {
     if (category) {
       loadProducts();
     }
-  }, [category, subcategory, selectedFilters, priceRange]);
+  }, [category, subcategory, selectedFilters, priceRange, currentPage, itemsPerPage]);
+
+  // Reset to page 1 when category, filters or limit change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [slug, subslug, selectedFilters, priceRange, itemsPerPage]);
 
   const handleFilterChange = (key: string, value: string, checked: boolean) => {
     setSelectedFilters((prev) => {
@@ -144,7 +162,27 @@ const CategoryPage = () => {
               </p>
             </div>
             
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-4">
+              {/* Limit Selector */}
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground whitespace-nowrap">Show:</span>
+                <Select 
+                  value={itemsPerPage.toString()} 
+                  onValueChange={(val) => setItemsPerPage(parseInt(val))}
+                >
+                  <SelectTrigger className="w-[80px] h-8 bg-card border-border/50">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-card border-border z-[100]">
+                      {[12, 24, 36, 60, 96].map((limit) => (
+                        <SelectItem key={limit} value={limit.toString()}>
+                          {limit}
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
               <div className="flex bg-secondary/50 p-1 rounded-lg border border-border/50">
                 <Button
                   variant={viewMode === "grid" ? "secondary" : "ghost"}
@@ -191,15 +229,56 @@ const CategoryPage = () => {
                 <p className="text-muted-foreground">Loading products...</p>
               </div>
             ) : products.length > 0 ? (
-              <div className={
-                viewMode === "grid" 
-                  ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in"
-                  : "flex flex-col gap-6 animate-fade-in"
-              }>
-                {products.map((product) => (
-                  <ProductCard key={product.id} product={product} />
-                ))}
-              </div>
+                <div className="space-y-12">
+                  <div className={
+                    viewMode === "grid" 
+                      ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in"
+                      : "flex flex-col gap-6 animate-fade-in"
+                  }>
+                    {products.map((product) => (
+                      <ProductCard key={product.id} product={product} />
+                    ))}
+                  </div>
+
+                  {/* Pagination UI */}
+                  {totalPages > 1 && (
+                    <div className="flex items-center justify-center gap-2 pt-8">
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                        disabled={currentPage === 1}
+                        className="rounded-full shadow-sm"
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                      </Button>
+                      
+                      <div className="flex items-center gap-1">
+                        {[...Array(totalPages)].map((_, i) => (
+                          <Button
+                            key={i + 1}
+                            variant={currentPage === i + 1 ? "default" : "ghost"}
+                            size="sm"
+                            onClick={() => setCurrentPage(i + 1)}
+                            className={`w-9 h-9 rounded-full ${currentPage === i + 1 ? "bg-gold text-foreground" : ""}`}
+                          >
+                            {i + 1}
+                          </Button>
+                        ))}
+                      </div>
+
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                        disabled={currentPage === totalPages}
+                        className="rounded-full shadow-sm"
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
+                </div>
             ) : (
               <div className="flex flex-col items-center justify-center py-16 text-center">
                 <div className="w-24 h-24 rounded-full bg-muted flex items-center justify-center mb-6">

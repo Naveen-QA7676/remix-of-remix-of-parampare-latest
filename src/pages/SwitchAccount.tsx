@@ -7,6 +7,7 @@ import TopUtilityHeader from "@/components/layout/TopUtilityHeader";
 import MainHeader from "@/components/layout/MainHeader";
 import Footer from "@/components/layout/Footer";
 import { useToast } from "@/hooks/use-toast";
+import apiClient from "@/lib/apiClient";
 
 const SwitchAccount = () => {
   const navigate = useNavigate();
@@ -18,8 +19,6 @@ const SwitchAccount = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [otpResponseData, setOtpResponseData] = useState<any>(null);
 
-  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
-
   const handleGetOTP = async () => {
     if (!/^[0-9]{10}$/.test(phone)) {
       setError("Please enter a valid 10-digit mobile number");
@@ -29,22 +28,12 @@ const SwitchAccount = () => {
     setIsLoading(true);
 
     try {
-      const response = await fetch(`${API_URL}/api/auth/send-otp`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          mobile: phone,
-          type: "login" 
-        }),
+      const res = await apiClient.post("/auth/send-otp", {
+        mobile: phone,
+        type: "login" 
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || "Failed to send OTP");
-      }
+      const data = res.data;
 
       setOtpResponseData(data);
       setStep("otp");
@@ -82,23 +71,13 @@ const SwitchAccount = () => {
 
     setIsLoading(true);
     try {
-      const response = await fetch(`${API_URL}/api/auth/verify-otp`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          otp: otpValue,
-          mobile: phone,
-          userId: otpResponseData?.userId || otpResponseData?.user?.id || otpResponseData?.data?.userId
-        }),
+      const res = await apiClient.post("/auth/verify-otp", {
+        otp: otpValue,
+        mobile: phone,
+        userId: otpResponseData?.userId || otpResponseData?.user?.id || otpResponseData?.data?.userId
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || "Invalid OTP");
-      }
+      const data = res.data;
 
       // Switch account
       const userData = data.user || data;
@@ -110,8 +89,11 @@ const SwitchAccount = () => {
       };
 
       localStorage.setItem("parampare_user", JSON.stringify(userToStore));
-      localStorage.setItem("auth_token", data.token);
+      localStorage.setItem("token", data.token);
       localStorage.setItem("isLoggedIn", "true");
+
+      // Notify hooks to refresh
+      window.dispatchEvent(new Event("loginSuccess"));
       
       setStep("success");
       toast({

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Home, Eye, EyeOff, Check, X, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import apiClient from "@/lib/apiClient";
 
 const passwordRules = [
   { rule: /.{8,}/, message: "At least 8 characters" },
@@ -28,8 +29,6 @@ const Register = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
-
-  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
   const getPasswordValidation = (password: string) => {
     return passwordRules.map((rule) => ({
@@ -90,19 +89,9 @@ const Register = () => {
           confirmPassword: formData.confirmPassword
         };
 
-        const response = await fetch(`${API_URL}/api/auth/register`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(payload),
-        });
+        const res = await apiClient.post("/auth/register", payload);
 
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(data.message || "Registration failed");
-        }
+        const data = res.data;
 
         toast({
           title: "Registration Successful",
@@ -110,18 +99,12 @@ const Register = () => {
         });
 
         // Send OTP
-        const otpResponse = await fetch(`${API_URL}/api/auth/send-otp`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            mobile: formData.mobile,
-            type: "register"
-          }),
+        const otpRes = await apiClient.post("/auth/send-otp", {
+          mobile: formData.mobile,
+          type: "register"
         });
 
-        if (!otpResponse.ok) {
+        if (!otpRes) {
            console.error("Failed to send OTP");
            toast({
              title: "Warning",

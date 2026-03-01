@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import apiClient from "@/lib/apiClient";
 
 const VerifyOTP = () => {
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
@@ -18,8 +19,6 @@ const VerifyOTP = () => {
   const { toast } = useToast();
 
   const { identifier, isLogin, returnTo, userData, apiResponse } = location.state || {};
-
-  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
   useEffect(() => {
     if (!identifier) {
@@ -89,23 +88,13 @@ const VerifyOTP = () => {
     setIsLoading(true);
     try {
       // Use API for verification
-      const response = await fetch(`${API_URL}/api/auth/verify-otp`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          otp: otpValue,
-          mobile: identifier,
-          userId: apiResponse?.userId || apiResponse?.user?.id || apiResponse?.data?.userId
-        }),
+      const res = await apiClient.post("/auth/verify-otp", {
+        otp: otpValue,
+        mobile: identifier,
+        userId: apiResponse?.userId || apiResponse?.user?.id || apiResponse?.data?.userId
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || "OTP Verification failed");
-      }
+      const data = res.data;
 
       toast({
         title: "Verification Successful!",
@@ -115,12 +104,16 @@ const VerifyOTP = () => {
       // Store user session
       localStorage.setItem("isLoggedIn", "true");
       localStorage.setItem("parampare_user", JSON.stringify(data.user || userData)); // Prefer user data from API
-      localStorage.setItem("auth_token", data.token); // Store token if provided
+      localStorage.setItem("token", data.token); // Store token if provided
       
       if (isLogin) {
         navigate("/");
+        // Notify hooks to refresh
+        window.dispatchEvent(new Event("loginSuccess"));
       } else {
         navigate(returnTo || "/");
+        // Notify hooks to refresh
+        window.dispatchEvent(new Event("loginSuccess"));
       }
 
     } catch (error: any) {

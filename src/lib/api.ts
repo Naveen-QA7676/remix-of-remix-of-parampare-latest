@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL}/api` : '/api';
+import apiClient from "./apiClient";
 
 export interface Category {
   _id: string;
@@ -71,11 +71,8 @@ export const fetchProducts = async (params: GetProductsParams = {}): Promise<Get
     }
   });
 
-  const response = await fetch(`${API_BASE_URL}/products?${query.toString()}`);
-  if (!response.ok) {
-    throw new Error('Failed to fetch products');
-  }
-  const data = await response.json();
+  const response = await apiClient.get(`/products?${query.toString()}`);
+  const data = response.data;
   
   // Map backend _id to id for frontend compatibility
   if (Array.isArray(data.products)) {
@@ -89,11 +86,8 @@ export const fetchProducts = async (params: GetProductsParams = {}): Promise<Get
 };
 
 export const fetchProductById = async (id: string): Promise<{ success: boolean; data: Product }> => {
-  const response = await fetch(`${API_BASE_URL}/products/${id}`);
-  if (!response.ok) {
-    throw new Error('Failed to fetch product');
-  }
-  const data = await response.json();
+  const response = await apiClient.get(`/products/${id}`);
+  const data = response.data;
   
   if (data.data) {
     data.data.id = data.data._id || data.data.id;
@@ -103,17 +97,11 @@ export const fetchProductById = async (id: string): Promise<{ success: boolean; 
 };
 
 export const fetchCategories = async (): Promise<{ success: boolean; data: Category[] }> => {
-  const response = await fetch(`${API_BASE_URL}/categories`);
-  if (!response.ok) {
-    throw new Error('Failed to fetch categories');
-  }
-  return await response.json();
+  const response = await apiClient.get("/categories");
+  return response.data;
 };
 
 export const fetchCategoryTree = async (): Promise<{ success: boolean; data: Category[] }> => {
-  const response = await fetch(`${API_BASE_URL}/categories/tree`);
-  if (!response.ok) {
-    throw new Error('Failed to fetch category tree');
-  }
-  return await response.json();
+  const response = await apiClient.get("/categories/tree");
+  return response.data;
 };

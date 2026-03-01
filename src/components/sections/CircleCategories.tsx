@@ -13,7 +13,7 @@ const categories = [
   { name: "Daily Wear", image: category2, href: "/products?category=daily" },
 ];
 
-const StampCard = ({ category, index }: { category: typeof categories[0]; index: number }) => {
+const CircleCard = ({ category, index }: { category: typeof categories[0]; index: number }) => {
   return (
     <Link
       to={category.href}
@@ -21,17 +21,19 @@ const StampCard = ({ category, index }: { category: typeof categories[0]; index:
       style={{ animationDelay: `${index * 100}ms` }}
     >
       <div className="relative flex flex-col items-center">
-        {/* Simple stamp image - no outer border */}
-        <div className="relative overflow-hidden transition-transform duration-300 group-hover:scale-105">
+        {/* Circle image - Small and centered */}
+        <div className="relative w-16 h-16 md:w-20 md:h-20 rounded-full overflow-hidden border border-border/50 group-hover:border-gold transition-all duration-500 bg-secondary shadow-sm group-hover:shadow-md">
           <img
             src={category.image}
             alt={category.name}
-            className="w-24 h-32 md:w-28 md:h-36 object-contain"
+            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
           />
+          {/* Subtle overlay */}
+          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-300" />
         </div>
         
-        {/* Category Name */}
-        <h3 className="mt-3 text-center text-xs md:text-sm font-medium text-foreground group-hover:text-maroon transition-colors">
+        {/* Category Name - Smaller font */}
+        <h3 className="mt-2 text-center text-[10px] md:text-xs font-medium text-foreground group-hover:text-gold transition-colors duration-300">
           {category.name}
         </h3>
       </div>
@@ -41,22 +43,24 @@ const StampCard = ({ category, index }: { category: typeof categories[0]; index:
 
 const CircleCategories = () => {
   return (
-    <section className="py-12 px-4 bg-cream">
-      <div className="container mx-auto max-w-5xl">
+    <section className="py-12 md:py-16 px-4 bg-background">
+      <div className="container mx-auto">
         {/* Section Header */}
-        <div className="text-center mb-10">
-          <h2 className="text-2xl md:text-3xl font-display font-semibold text-foreground mb-2">
+        <div className="text-center mb-10 md:mb-14">
+          <span className="inline-block text-gold font-body text-xs tracking-[0.25em] uppercase mb-3 text-center w-full">
+            Our Collections
+          </span>
+          <h2 className="text-3xl md:text-5xl font-display font-medium text-foreground text-center">
             Shop by Category
           </h2>
-          <p className="text-muted-foreground text-sm">
-            Explore our curated collections
-          </p>
         </div>
 
-        {/* Categories Grid - 6 items, smaller size */}
-        <div className="grid grid-cols-3 md:grid-cols-6 gap-4 md:gap-6 justify-items-center">
+        {/* Categories Flex Grid - Single centered row */}
+        <div className="flex flex-nowrap md:flex-wrap justify-center items-start gap-4 md:gap-8 lg:gap-12 overflow-x-auto md:overflow-visible scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
           {categories.map((category, index) => (
-            <StampCard key={category.name} category={category} index={index} />
+            <div key={category.name} className="flex-shrink-0 w-20 md:w-24">
+              <CircleCard category={category} index={index} />
+            </div>
           ))}
         </div>
       </div>

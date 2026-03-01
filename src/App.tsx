@@ -16,6 +16,7 @@ import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
 import OrderConfirmation from "./pages/OrderConfirmation";
 import MyOrders from "./pages/MyOrders";
+import OrderDetail from "./pages/OrderDetail";
 import IlkalSarees from "./pages/IlkalSarees";
 import OurStory from "./pages/OurStory";
 import ShippingDelivery from "./pages/ShippingDelivery";
@@ -43,11 +44,16 @@ const ScrollToSection = () => {
   const location = useLocation();
 
   useEffect(() => {
-    // Handle hash navigation for bestsellers
-    if (location.hash === "#bestsellers" || location.state?.scrollTo === "bestsellers") {
+    // Handle hash navigation for any ID
+    const hash = location.hash.replace('#', '');
+    if (hash) {
       setTimeout(() => {
-        document.getElementById("bestsellers")?.scrollIntoView({ behavior: "smooth" });
-      }, 100);
+        document.getElementById(hash)?.scrollIntoView({ behavior: "smooth" });
+      }, 200);
+    } else if (location.state?.scrollTo) {
+      setTimeout(() => {
+        document.getElementById(location.state.scrollTo)?.scrollIntoView({ behavior: "smooth" });
+      }, 200);
     }
   }, [location]);
 
@@ -75,6 +81,7 @@ const App = () => (
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/order-confirmation" element={<OrderConfirmation />} />
           <Route path="/orders" element={<MyOrders />} />
+          <Route path="/orders/:orderId" element={<OrderDetail />} />
           <Route path="/account" element={<YourAccount />} />
           <Route path="/addresses" element={<YourAddresses />} />
           <Route path="/switch-account" element={<SwitchAccount />} />

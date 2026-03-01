@@ -183,7 +183,7 @@ const Chatbot = forwardRef<HTMLDivElement>((_, ref) => {
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-24 right-6 z-40 w-14 h-14 rounded-full bg-maroon hover:bg-maroon-dark text-white shadow-elevated flex items-center justify-center transition-all duration-300 hover:scale-105 group"
+          className="fixed bottom-24 right-6 z-[60] w-14 h-14 rounded-full bg-maroon hover:bg-maroon-dark text-white shadow-elevated flex items-center justify-center transition-all duration-300 hover:scale-105 group"
           title="Need help?"
         >
           <MessageCircle className="h-6 w-6" />
@@ -195,7 +195,7 @@ const Chatbot = forwardRef<HTMLDivElement>((_, ref) => {
 
       {/* Expanded Chat Window - positioned above WhatsApp and BackToTop */}
       {isOpen && (
-        <div className="fixed bottom-24 right-6 z-40 w-[360px] max-w-[calc(100vw-48px)] bg-card rounded-2xl shadow-elevated border border-border overflow-hidden animate-fade-in-up">
+        <div className="fixed bottom-24 right-6 z-[60] w-[360px] max-w-[calc(100vw-48px)] bg-card rounded-2xl shadow-elevated border border-border overflow-hidden animate-fade-in-up">
           {/* Header */}
           <div className="bg-maroon text-white p-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -217,7 +217,7 @@ const Chatbot = forwardRef<HTMLDivElement>((_, ref) => {
           </div>
 
           {/* Messages Area */}
-          <div className="h-[320px] overflow-y-auto p-4 space-y-4 bg-muted/30">
+          <div className="h-[280px] overflow-y-auto p-4 space-y-4 bg-muted/30">
             {messages.map((message) => (
               <div
                 key={message.id}

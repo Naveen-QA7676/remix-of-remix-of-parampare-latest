@@ -6,6 +6,7 @@ import TopUtilityHeader from "@/components/layout/TopUtilityHeader";
 import MainHeader from "@/components/layout/MainHeader";
 import Footer from "@/components/layout/Footer";
 import { useToast } from "@/hooks/use-toast";
+import apiClient from "@/lib/apiClient";
 
 interface Order {
   id: string;
@@ -28,19 +29,75 @@ const OrderConfirmation = () => {
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
-    const orderId = location.state?.orderId;
+    let orderId = location.state?.orderId;
+    const passedOrder = location.state?.order;
+
     if (!orderId) {
-      navigate("/");
+      orderId = sessionStorage.getItem("lastOrderId") || undefined;
+    }
+
+    if (passedOrder) {
+      setOrder(passedOrder);
+    }
+
+    if (!orderId && !passedOrder) {
+      // Check if there's a recent order in localStorage we can show
+      const orders = JSON.parse(localStorage.getItem("orders") || "[]");
+      if (orders.length > 0) {
+        setOrder(orders[0]);
+      } else {
+        navigate("/");
+      }
       return;
     }
 
-    const orders = JSON.parse(localStorage.getItem("orders") || "[]");
-    const foundOrder = orders.find((o: Order) => o.id === orderId);
-    if (foundOrder) {
-      setOrder(foundOrder);
-    } else {
-      navigate("/");
-    }
+    const loadOrder = async () => {
+      if (passedOrder) return; // Already have data
+      // Try local storage first (fallback/guest path)
+      const orders = JSON.parse(localStorage.getItem("orders") || "[]");
+      const foundOrder = orders.find((o: Order) => o.id === orderId);
+      
+      if (foundOrder) {
+        setOrder(foundOrder);
+      } else {
+        // If not in local storage, fetch from API
+        try {
+          const res = await apiClient.get(`/orders/${orderId}`);
+          const data = res.data.data || res.data;
+          const mapped: Order = {
+            id: data.orderId || data._id || data.id,
+            date: data.createdAt || data.date,
+            items: (data.items || []).map((i: any) => ({
+              id: i.product || i.productId || i._id,
+              name: i.name,
+              image: i.image || "",
+              price: i.price,
+              quantity: i.quantity,
+            })),
+            address: data.shippingAddress,
+            status: data.status || "Order Confirmed",
+            paymentMethod: data.paymentMethod || "Pay on Delivery",
+            subtotal: data.subtotal || data.totalAmount,
+            deliveryCharge: data.deliveryCharge || 0,
+            total: data.totalAmount || data.total,
+            estimatedDelivery: data.estimatedDelivery || new Date(new Date(data.createdAt).getTime() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+          };
+          setOrder(mapped);
+        } catch (err) {
+          console.error("Fetch order details failed:", err);
+          // Don't navigate away yet, maybe show a generic success
+        }
+      }
+    };
+
+    loadOrder();
+
+    // Auto-redirect to order details after 8 seconds
+    const timer = setTimeout(() => {
+      navigate(`/orders/${orderId}`);
+    }, 8000);
+
+    return () => clearTimeout(timer);
   }, [location, navigate]);
 
   const copyOrderId = () => {
@@ -73,15 +130,15 @@ const OrderConfirmation = () => {
       <main className="container mx-auto px-4 py-8">
         {/* Success Banner */}
         <div className="max-w-3xl mx-auto">
-          <div className="text-center mb-8">
-            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <CheckCircle className="h-12 w-12 text-green-600" />
+          <div className="text-center mb-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <div className="w-24 h-24 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm border border-green-100">
+              <CheckCircle className="h-14 w-14 text-green-500 animate-in zoom-in duration-500 delay-300 fill-green-50" />
             </div>
-            <h1 className="text-3xl font-display font-semibold text-foreground mb-2">
+            <h1 className="text-4xl font-display font-semibold text-foreground mb-3">
               Order Placed Successfully!
             </h1>
-            <p className="text-muted-foreground">
-              Thank you for your order! We'll notify you once your saree is shipped.
+            <p className="text-muted-foreground text-lg">
+              Thank you for choosing Parampare. We've received your order.
             </p>
           </div>
 
@@ -91,9 +148,9 @@ const OrderConfirmation = () => {
               <div>
                 <p className="text-sm text-muted-foreground mb-1">Order ID</p>
                 <div className="flex items-center gap-2">
-                  <span className="font-bold text-lg">{order.id}</span>
-                  <button onClick={copyOrderId} className="text-gold hover:text-gold/80">
-                    {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                  <span className="font-bold text-xl text-gold">{order.id}</span>
+                  <button onClick={copyOrderId} className="text-muted-foreground hover:text-gold transition-colors">
+                    {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
                   </button>
                 </div>
               </div>
@@ -191,7 +248,7 @@ const OrderConfirmation = () => {
               className="gap-2"
             >
               <Package className="h-4 w-4" />
-              View All Orders
+              View My Orders
             </Button>
             <Button
               onClick={() => navigate("/products")}
