@@ -11,6 +11,7 @@ import WhyChooseUs from "@/components/sections/WhyChooseUs";
 import Testimonials from "@/components/sections/Testimonials";
 import Footer from "@/components/layout/Footer";
 import BackToTop from "@/components/layout/BackToTop";
+import PromotionalBanner from "@/components/sections/PromotionalBanner";
 
 const Index = () => {
   return (
@@ -23,6 +24,7 @@ const Index = () => {
         <CircleCategories />
         <ShaadiWardrobe />
         <Bestsellers />
+        <PromotionalBanner />
         <EthnicEnsemble />
         <CuratedCollection />
         <WhyChooseUs />

@@ -30,6 +30,7 @@ export interface Product {
   stockQuantity: number;
   rating: number;
   reviewCount: number;
+  reviewDescription?: string;
   badges: string[];
   deliveryTimeDays: string;
   // Mapped fields for frontend consistency

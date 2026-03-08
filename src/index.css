@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -8,54 +8,54 @@
 
 @layer base {
   :root {
-    --background: 30 20% 99%;
-    --foreground: 220 20% 12%;
+    --background: 40 33% 98%; /* ivory/off-white */
+    --foreground: 220 10% 15%; /* charcoal */
 
     --card: 0 0% 100%;
-    --card-foreground: 220 20% 12%;
+    --card-foreground: 220 10% 15%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 220 20% 12%;
+    --popover-foreground: 220 10% 15%;
 
-    --primary: 220 25% 18%;
-    --primary-foreground: 30 20% 98%;
+    --primary: 220 15% 18%;
+    --primary-foreground: 40 33% 98%;
 
-    --secondary: 30 15% 96%;
-    --secondary-foreground: 220 20% 20%;
+    --secondary: 40 20% 95%;
+    --secondary-foreground: 220 15% 20%;
 
-    --muted: 30 10% 94%;
-    --muted-foreground: 220 10% 50%;
+    --muted: 40 15% 92%;
+    --muted-foreground: 220 10% 45%;
 
-    --accent: 24 80% 50%;
+    --accent: 28 75% 48%; /* Muted Saffron/Burnt Orange */
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 30 15% 90%;
-    --input: 30 15% 90%;
-    --ring: 24 80% 50%;
+    --border: 40 15% 90%;
+    --input: 40 15% 90%;
+    --ring: 28 75% 48%;
 
-    --radius: 0.75rem;
+    --radius: 0.5rem; /* slightly less round for modern premium feel */
 
-    --sidebar-background: 30 20% 98%;
-    --sidebar-foreground: 220 20% 20%;
-    --sidebar-primary: 220 25% 18%;
-    --sidebar-primary-foreground: 30 20% 98%;
-    --sidebar-accent: 30 15% 96%;
-    --sidebar-accent-foreground: 220 20% 20%;
-    --sidebar-border: 30 15% 90%;
-    --sidebar-ring: 24 80% 50%;
+    --sidebar-background: 40 33% 98%;
+    --sidebar-foreground: 220 15% 20%;
+    --sidebar-primary: 220 15% 18%;
+    --sidebar-primary-foreground: 40 33% 98%;
+    --sidebar-accent: 40 20% 95%;
+    --sidebar-accent-foreground: 220 15% 20%;
+    --sidebar-border: 40 15% 90%;
+    --sidebar-ring: 28 75% 48%;
 
-    /* Modern Parampare tokens - Warm Terracotta & Deep Navy */
-    --gold: 24 80% 50%;
-    --gold-light: 28 70% 70%;
-    --gold-dark: 20 85% 38%;
-    --maroon: 220 25% 18%;
-    --maroon-light: 220 20% 35%;
-    --maroon-dark: 220 30% 12%;
-    --cream: 30 20% 97%;
-    --cream-dark: 30 15% 92%;
+    /* Modern Parampare tokens - Muted Saffron & Charcoal */
+    --gold: 24 70% 50%; /* Softer burnt orange */
+    --gold-light: 28 65% 65%;
+    --gold-dark: 20 75% 38%;
+    --maroon: 220 15% 18%;
+    --maroon-light: 220 10% 35%;
+    --maroon-dark: 220 20% 12%;
+    --cream: 40 33% 96%;
+    --cream-dark: 40 20% 92%;
     
     /* Glass effect tokens */
     --glass-bg: 0 0% 100% / 0.7;

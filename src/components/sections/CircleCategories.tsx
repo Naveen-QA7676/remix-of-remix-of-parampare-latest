@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { Sparkles } from "lucide-react";
 import category1 from "@/assets/category-1.png";
 import category2 from "@/assets/category-2.png";
 import category3 from "@/assets/category-3.png";
@@ -46,7 +47,8 @@ const CircleCategories = () => {
       <div className="container mx-auto">
         {/* Section Header */}
         <div className="text-center mb-10 md:mb-14">
-          <span className="inline-block text-gold font-body text-sm md:text-base tracking-[0.25em] uppercase mb-3 text-center w-full">
+          <span className="inline-flex items-center justify-center gap-2 text-gold font-body text-sm md:text-base tracking-[0.25em] uppercase mb-3 text-center w-full">
+            <Sparkles className="h-4 w-4" />
             Our Collections
           </span>
           <h2 className="text-2xl md:text-4xl font-display font-medium text-foreground text-center">

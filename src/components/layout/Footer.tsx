@@ -28,7 +28,7 @@ const Footer = () => {
             <h4 className="font-display text-3xl font-bold text-gold mb-4">Parampare</h4>
             <p className="font-body text-sm text-muted-foreground mb-6">Bringing authentic Ilkal sarees from Karnataka's finest weavers to your wardrobe.</p>
             <div className="space-y-3 mb-6">
-              <a href="tel:+919876543210" className="flex items-center gap-3 text-sm text-muted-foreground hover:text-gold"><Phone size={16} />+91 98765 43210</a>
+              <a href="tel:+918722116959" className="flex items-center gap-3 text-sm text-muted-foreground hover:text-gold"><Phone size={16} />+91 87221 16959</a>
               <a href="mailto:hello@parampare.com" className="flex items-center gap-3 text-sm text-muted-foreground hover:text-gold"><Mail size={16} />hello@parampare.com</a>
               <div className="flex items-start gap-3 text-sm text-muted-foreground"><MapPin size={16} className="mt-0.5" />Ilkal, Karnataka, India</div>
             </div>
@@ -50,7 +50,7 @@ const Footer = () => {
             <ul className="space-y-3 font-body text-sm">
               {[
                 { label: "Shipping & Delivery", to: "/shipping-delivery" },
-                { label: "Track Your Order", to: "https://www.indiapost.gov.in/", external: true },
+                { label: "Track Your Order", to: "https://myspeedpost.com/", external: true },
                 { label: "Returns & Exchange", to: "/returns-exchange" },
                 { label: "Contact Us", to: "/contact" },
                 { label: "FAQs", to: "/faqs" }

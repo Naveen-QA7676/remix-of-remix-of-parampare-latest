@@ -457,7 +457,7 @@ const ProductDetail = () => {
                   <p className="text-sm text-muted-foreground">Based on {product.reviewCount} reviews</p>
                 </div>
               </div>
-              <p className="text-sm text-muted-foreground italic">"Authentic craftsmanship and beautiful drape. Highly recommended!"</p>
+              <p className="text-sm text-muted-foreground italic">"{product.reviewDescription || "Authentic craftsmanship and beautiful drape. Highly recommended!"}"</p>
             </div>
             <h2 className="text-xl font-display font-semibold mt-8">Care Instructions</h2>
             <ul className="space-y-2">

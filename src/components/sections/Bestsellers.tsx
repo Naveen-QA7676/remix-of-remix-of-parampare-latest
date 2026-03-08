@@ -1,4 +1,4 @@
-import { Heart, ShoppingBag, Eye, ChevronLeft, ChevronRight } from "lucide-react";
+import { Heart, ShoppingBag, Eye, ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
@@ -163,7 +163,8 @@ const Bestsellers = () => {
     <section id="bestsellers" className="py-12 md:py-16 bg-background relative overflow-hidden font-body">
       <div className="container mx-auto px-4 relative">
         <div className="text-center mb-14 opacity-0 animate-fade-in" style={{ animationDelay: "0.2s" }}>
-          <span className="inline-block text-gold font-body text-sm md:text-base tracking-[0.25em] uppercase mb-3 text-center w-full">
+          <span className="inline-flex justify-center items-center gap-2 text-gold font-body text-sm md:text-base tracking-[0.25em] uppercase mb-3 text-center w-full">
+            <Sparkles className="h-4 w-4" />
             Most Loved
           </span>
           <h2 className="font-display text-2xl md:text-4xl font-medium text-foreground text-center">

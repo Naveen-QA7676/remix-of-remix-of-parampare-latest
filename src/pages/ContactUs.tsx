@@ -43,7 +43,7 @@ const ContactUs = () => {
                 <div>
                   <h3 className="font-semibold text-foreground mb-1">Phone</h3>
                   <a href="tel:+919876543210" className="text-primary hover:underline">
-                    +91 98765 43210
+                    +91 87221 16959
                   </a>
                 </div>
               </div>

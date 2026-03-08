@@ -1,4 +1,4 @@
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
 import saree1 from "@/assets/saree-1.jpg";
 import saree2 from "@/assets/saree-2.jpg";
@@ -41,7 +41,8 @@ const ShaadiWardrobe = () => {
       <div className="container mx-auto px-4 relative">
         {/* Section Header - Modern & Minimal */}
         <div className="text-center mb-14 opacity-0 animate-fade-in" style={{ animationDelay: "0.1s" }}>
-          <span className="inline-block text-gold font-body text-sm md:text-base tracking-[0.25em] uppercase mb-3 text-center w-full">
+          <span className="inline-flex justify-center items-center gap-2 text-gold font-body text-sm md:text-base tracking-[0.25em] uppercase mb-3 text-center w-full">
+            <Sparkles className="h-4 w-4" />
             Wedding Season
           </span>
           <h2 className="font-display text-2xl md:text-4xl font-medium text-foreground text-center">

@@ -73,7 +73,7 @@ export default {
         },
       },
       fontFamily: {
-        display: ["Cormorant Garamond", "serif"],
+        display: ["DM Sans", "sans-serif"],
         body: ["DM Sans", "sans-serif"],
       },
       borderRadius: {

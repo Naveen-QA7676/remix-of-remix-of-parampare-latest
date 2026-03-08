@@ -1,4 +1,4 @@
-import { Shield, Truck, RefreshCw, Headphones } from "lucide-react";
+import { Shield, Truck, RefreshCw, Headphones, Sparkles } from "lucide-react";
 
 const features = [
   { icon: Shield, title: "Direct from Weaver", description: "Authentic handwoven Ilkal sarees" },
@@ -12,7 +12,10 @@ const WhyChooseUs = () => {
     <section className="py-16 md:py-20 bg-secondary/50">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12 opacity-0 animate-fade-in">
-          <span className="inline-block text-gold font-body text-xs tracking-[0.25em] uppercase mb-3">Why Parampare</span>
+          <span className="inline-flex justify-center items-center gap-2 text-gold font-body text-xs tracking-[0.25em] uppercase mb-3">
+            <Sparkles className="h-4 w-4" />
+            Why Parampare
+          </span>
           <h2 className="font-display text-2xl md:text-4xl font-medium text-foreground">The Parampare Promise</h2>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">

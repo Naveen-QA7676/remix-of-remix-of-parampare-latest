@@ -1,4 +1,4 @@
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import saree1 from "@/assets/saree-1.jpg";
@@ -52,7 +52,8 @@ const EthnicEnsemble = () => {
     <section id="ethnic-ensemble" className="py-12 md:py-16 bg-background relative overflow-hidden font-body">
       <div className="container mx-auto px-4 relative border-t border-border/50 pt-16">
         <div className="text-center mb-14 opacity-0 animate-fade-in" style={{ animationDelay: "0.1s" }}>
-          <span className="inline-block text-gold font-body text-sm md:text-base tracking-[0.25em] uppercase mb-3 text-center w-full">
+          <span className="inline-flex justify-center items-center gap-2 text-gold font-body text-sm md:text-base tracking-[0.25em] uppercase mb-3 text-center w-full">
+            <Sparkles className="h-4 w-4" />
             Style Collections
           </span>
           <h2 className="font-display text-2xl md:text-4xl font-medium text-foreground text-center">
