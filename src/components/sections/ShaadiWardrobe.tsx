@@ -10,31 +10,31 @@ const collections = [
     title: "Bridal Sarees",
     subtitle: "For the Big Day",
     image: saree1,
-    href: "/products?occasion=wedding&category=Bridal",
+    href: "/category/shaadi-wardrobe/bridal-sarees",
   },
   {
     title: "Mehendi Collection",
     subtitle: "Vibrant & Playful",
     image: saree2,
-    href: "/products?occasion=festive&category=Mehendi",
+    href: "/category/shaadi-wardrobe/mehendi-collections",
   },
   {
     title: "Sangeet Specials",
     subtitle: "Dance-Ready Drapes",
     image: saree3,
-    href: "/products?occasion=festive&category=Sangeet",
+    href: "/category/shaadi-wardrobe/sangeet-specials",
   },
   {
     title: "Reception Elegance",
     subtitle: "Grand Finales",
     image: saree4,
-    href: "/products?occasion=wedding&category=Reception",
+    href: "/category/shaadi-wardrobe/reception-elegance",
   },
 ];
 
 const ShaadiWardrobe = () => {
   return (
-    <section className="py-20 md:py-28 bg-secondary relative overflow-hidden">
+    <section id="shaadi-wardrobe" className="py-12 md:py-16 bg-secondary relative overflow-hidden">
       {/* Modern Gradient Background */}
       <div className="absolute inset-0 bg-gradient-to-br from-gold/5 via-transparent to-transparent" />
       

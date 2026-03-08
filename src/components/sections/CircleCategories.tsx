@@ -5,11 +5,11 @@ import category3 from "@/assets/category-3.png";
 import category4 from "@/assets/category-4.png";
 
 const categories = [
-  { name: "Silk Sarees", image: category2, href: "/products?category=silk" },
-  { name: "Cotton Sarees", image: category3, href: "/products?category=cotton" },
-  { name: "Bridal Collection", image: category4, href: "/products?category=bridal" },
-  { name: "Festive Wear", image: category1, href: "/products?category=festive" },
-  { name: "Daily Wear", image: category2, href: "/products?category=daily" },
+  { name: "Silk Sarees", image: category2, href: "/category/shop-by-category/silk-sarees" },
+  { name: "Cotton Sarees", image: category3, href: "/category/shop-by-category/cotton-sarees" },
+  { name: "Bridal Collection", image: category4, href: "/category/shop-by-category/bridal-collection" },
+  { name: "Festive Wear", image: category1, href: "/category/occasions/festive-wear" },
+  { name: "Daily Wear", image: category2, href: "/category/shop-by-category/daily-wear" },
 ];
 
 const CircleCard = ({ category, index }: { category: typeof categories[0]; index: number }) => {

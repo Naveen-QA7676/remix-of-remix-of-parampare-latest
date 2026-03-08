@@ -22,11 +22,11 @@ const PromoBanner = () => {
   return (
     <section className="py-6 bg-secondary/50 border-y border-border/50">
       <div className="container mx-auto px-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+        <div className="max-w-fit mx-auto md:max-w-none grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
           {promos.map((promo, index) => (
             <div
               key={promo.title}
-              className="flex items-center gap-4 justify-center md:justify-start opacity-0 animate-fade-in"
+              className="flex items-center gap-4 justify-start opacity-0 animate-fade-in"
               style={{ animationDelay: `${0.1 + index * 0.1}s` }}
             >
               <div className="w-12 h-12 rounded-full bg-gold/10 flex items-center justify-center flex-shrink-0">

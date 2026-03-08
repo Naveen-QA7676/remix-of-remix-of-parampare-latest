@@ -8,21 +8,21 @@ const collections = [
     title: "Your Shaadi Wardrobe",
     description: "Curated wedding collections for your special day. From bridal reds to festive golds.",
     image: saree1,
-    link: "/products?occasion=wedding&category=Wedding Collection",
+    link: "/category/shaadi-wardrobe",
     badge: "Wedding Special",
   },
   {
     title: "Ethnic Ensemble",
     description: "Style-based collections for every occasion. Traditional meets contemporary.",
     image: saree3,
-    link: "/products?occasion=festive&category=Ethnic Collection",
+    link: "/category/ethnic-ensemble",
     badge: "Trending",
   },
 ];
 
 const CuratedCollection = () => {
   return (
-    <section className="py-16 md:py-24 bg-cream relative overflow-hidden">
+    <section className="py-12 md:py-16 bg-cream relative overflow-hidden">
       {/* Background Decoration */}
       <div className="absolute top-0 right-0 w-96 h-96 bg-gold/5 rounded-full blur-3xl" />
       <div className="absolute bottom-0 left-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />

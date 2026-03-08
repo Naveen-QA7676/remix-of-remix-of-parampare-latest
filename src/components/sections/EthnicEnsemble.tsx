@@ -11,21 +11,21 @@ const ensembles = [
     description: "Timeless classics for pujas, festivals, and family gatherings",
     image: saree1,
     tag: "Heritage",
-    href: "/products?occasion=traditional&category=Traditional",
+    href: "/category/ethnic-ensemble/traditional-elegance",
   },
   {
     title: "Contemporary Chic",
     description: "Modern silhouettes with ethnic soul for the new-age woman",
     image: saree2,
     tag: "Trending",
-    href: "/products?weave=jacquard&category=Contemporary",
+    href: "/category/ethnic-ensemble/contemporary-chic",
   },
   {
     title: "Festive Grandeur",
     description: "Rich fabrics and vibrant hues for celebrations that shine",
     image: saree3,
     tag: "Limited",
-    href: "/products?occasion=festive&category=Festive",
+    href: "/category/ethnic-ensemble/festive-grandeur",
   },
 ];
 
@@ -49,7 +49,7 @@ const EthnicEnsemble = () => {
   }, [isPaused]);
 
   return (
-    <section className="py-20 md:py-28 bg-background relative overflow-hidden font-body">
+    <section id="ethnic-ensemble" className="py-12 md:py-16 bg-background relative overflow-hidden font-body">
       <div className="container mx-auto px-4 relative border-t border-border/50 pt-16">
         <div className="text-center mb-14 opacity-0 animate-fade-in" style={{ animationDelay: "0.1s" }}>
           <span className="inline-block text-gold font-body text-sm md:text-base tracking-[0.25em] uppercase mb-3 text-center w-full">
