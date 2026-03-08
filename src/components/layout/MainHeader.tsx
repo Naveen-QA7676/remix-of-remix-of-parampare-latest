@@ -241,20 +241,22 @@ const MainHeader = () => {
                   <NavigationMenuContent className="z-[100]">
                     <div className="w-[250px] p-4 bg-card border border-border shadow-xl rounded-lg">
                       <ul className="space-y-2">
-                        {categories.find(c => c.slug === 'dress-materials')?.children?.map((sub) => (
-                          <li key={sub._id}>
+                        {[
+                          { name: "Silk Material", slug: "silk-material" },
+                          { name: "Cotton Material", slug: "cotton-material" },
+                          { name: "Silk and Cotton Material", slug: "silk-and-cotton-material" },
+                        ].map((item) => (
+                          <li key={item.slug}>
                             <NavigationMenuLink asChild>
                               <Link
-                                to={`/category/dress-materials/${sub.slug}`}
+                                to={`/category/dress-materials/${item.slug}`}
                                 className="text-sm text-muted-foreground hover:text-gold transition-colors block py-2 px-2 rounded hover:bg-secondary/50"
                               >
-                                {sub.name}
+                                {item.name}
                               </Link>
                             </NavigationMenuLink>
                           </li>
-                        )) || (
-                          <li className="text-sm text-muted-foreground px-2">No items found</li>
-                        )}
+                        ))}
                       </ul>
                     </div>
                   </NavigationMenuContent>
@@ -586,17 +588,21 @@ const MainHeader = () => {
                   <ChevronDown className={cn("h-4 w-4 transition-transform", mobileDropdown === "dress" && "rotate-180")} />
                 </button>
                 {mobileDropdown === "dress" && (
-                  <div className="pl-4 pb-2 animate-fade-in">
-                    {categories.find(c => c.slug === 'dress-materials')?.children?.map((sub) => (
+                  <div className="pl-4 pb-2 animate-fade-in space-y-3">
+                    {[
+                      { name: "Silk Material", slug: "silk-material" },
+                      { name: "Cotton Material", slug: "cotton-material" },
+                      { name: "Silk and Cotton Material", slug: "silk-and-cotton-material" },
+                    ].map((item) => (
                       <Link
-                        key={sub._id}
-                        to={`/category/dress-materials/${sub.slug}`}
+                        key={item.slug}
+                        to={`/category/dress-materials/${item.slug}`}
                         onClick={() => setIsMobileMenuOpen(false)}
                         className="block py-2 px-2 text-sm text-foreground/80 hover:text-gold"
                       >
-                        {sub.name}
+                        {item.name}
                       </Link>
-                    )) || <div className="text-xs text-muted-foreground px-2">No items found</div>}
+                    ))}
                   </div>
                 )}
               </div>

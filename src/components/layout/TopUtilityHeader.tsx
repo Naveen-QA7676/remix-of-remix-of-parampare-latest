@@ -4,9 +4,9 @@ import { Link } from "react-router-dom";
 
 const TopUtilityHeader = () => {
   const promoMessages = [
-    "SHOP FOR ₹5999+ & GET EXTRA 10% OFF INSTANTLY!*",
-    "GET EXTRA 5% OFF ON ₹2499+ ORDERS — Use Code: FLASH5",
-    "FIRST ORDER? ENJOY 15% OFF ON ₹7999+"
+    "New Customers Special 🎉 – Flat ₹199 OFF on your first order",
+    "Free Delivery 🚚 on orders above ₹3999",
+    "Get 5% OFF on orders above ₹6999"
   ];
 
   const [currentPromo, setCurrentPromo] = useState(0);
@@ -20,12 +20,12 @@ const TopUtilityHeader = () => {
 
   return (
     <div className="bg-foreground text-background">
-      {/* Modern Promo Banner */}
-      <div className="bg-gold py-2.5 px-4 overflow-hidden">
+      {/* Modern Promo Banner - Lighter Classic Orange */}
+      <div className="bg-[#FF9E4D] py-2 px-4 border-b border-black/5">
         <div className="flex items-center justify-center">
           <p 
             key={currentPromo}
-            className="text-sm font-medium tracking-wide text-foreground opacity-0 animate-blur-in"
+            className="text-sm font-semibold tracking-wide text-foreground transition-all duration-500 animate-fade-in text-center"
           >
             {promoMessages[currentPromo]}
           </p>

@@ -18,72 +18,102 @@ const ReturnsExchange = () => {
             Return, Exchange & Refund Policy
           </h1>
           
+          <h2 className="text-2xl font-semibold text-primary mb-4">
+            Transparent & Customer-Friendly Policy for Authentic Ilkal Sarees
+          </h2>
+
           <p className="text-lg text-muted-foreground mb-8">
-            At Parampare, we take immense pride in offering you authentic Ilkal sarees crafted with heritage and artistry. Our goal is to ensure you enjoy a smooth and delightful shopping experience.
+            At Parampare, we take pride in offering authentic Ilkal sarees handcrafted with heritage and precision. Each saree undergoes a detailed quality check before dispatch to ensure you receive a product that reflects true handloom craftsmanship. However, if you experience any concern with your purchase, our return, exchange, and refund policy is designed to make the process simple, fair, and transparent.
+            <br /><br />
+            We encourage customers to review the policy carefully before initiating a request.
           </p>
 
-          <section className="mb-8">
-            <h2 className="font-display text-2xl font-bold text-foreground mb-4">Eligibility for Returns</h2>
-            <div className="grid md:grid-cols-2 gap-6">
-              <div className="bg-green-50 dark:bg-green-950/20 p-6 rounded-lg border border-green-200 dark:border-green-800">
-                <h3 className="font-semibold text-green-700 dark:text-green-400 mb-3 flex items-center gap-2">
-                  <Check size={20} /> Eligible If:
-                </h3>
-                <ul className="text-muted-foreground space-y-2 text-sm">
-                  <li>• Product is unused and unworn</li>
-                  <li>• All original tags and packaging intact</li>
-                  <li>• Returned within 7 days of delivery</li>
-                  <li>• Proof of purchase provided</li>
-                </ul>
-              </div>
-              <div className="bg-red-50 dark:bg-red-950/20 p-6 rounded-lg border border-red-200 dark:border-red-800">
-                <h3 className="font-semibold text-red-700 dark:text-red-400 mb-3 flex items-center gap-2">
-                  <X size={20} /> Non-Returnable:
-                </h3>
-                <ul className="text-muted-foreground space-y-2 text-sm">
-                  <li>• Customized or tailor-made products</li>
-                  <li>• Altered or washed products</li>
-                  <li>• Items marked "Final Sale"</li>
-                </ul>
-              </div>
-            </div>
-          </section>
-
-          <section className="mb-8">
-            <h2 className="font-display text-2xl font-bold text-foreground mb-4">How to Initiate a Return</h2>
-            <ol className="text-muted-foreground space-y-2">
-              <li>1. Log in to your Parampare account</li>
-              <li>2. Navigate to My Orders</li>
-              <li>3. Select the order you want to return/exchange</li>
-              <li>4. Choose Return or Exchange</li>
-              <li>5. Submit the request</li>
-            </ol>
-          </section>
-
-          <section className="mb-8">
-            <h2 className="font-display text-2xl font-bold text-foreground mb-4">Refund Policy</h2>
-            <p className="text-muted-foreground mb-4">
-              Refunds will be processed within 7–10 business days after the returned product passes quality inspection.
+          <section className="mb-12">
+            <h2 className="font-display text-2xl font-bold text-foreground mb-4">Return & Exchange Eligibility</h2>
+            <p className="text-muted-foreground mb-4">You may request a return or exchange if the following conditions are met:</p>
+            <ul className="text-muted-foreground space-y-2 mb-6">
+              <li className="flex items-center gap-3"><Check className="text-green-600 flex-shrink-0" size={18} /><span>The saree is unused, unworn, and unwashed</span></li>
+              <li className="flex items-center gap-3"><Check className="text-green-600 flex-shrink-0" size={18} /><span>All original tags and packaging are intact</span></li>
+              <li className="flex items-center gap-3"><Check className="text-green-600 flex-shrink-0" size={18} /><span>The request is initiated within 7 days of delivery</span></li>
+              <li className="flex items-center gap-3"><Check className="text-green-600 flex-shrink-0" size={18} /><span>Proof of purchase or order confirmation is available</span></li>
+            </ul>
+            <p className="text-sm text-muted-foreground bg-amber-50 dark:bg-amber-950/20 p-4 border-l-4 border-amber-400 rounded">
+              <strong>Note:</strong> Since Ilkal sarees are delicate handloom products, items showing signs of usage, alterations, stains, perfume, or damage will not qualify for return.
             </p>
-            <ul className="text-muted-foreground space-y-1">
-              <li>• Original payment mode (card/bank/wallet)</li>
-              <li>• Or as store credit (if chosen)</li>
+          </section>
+
+          <section className="mb-12">
+            <h2 className="font-display text-2xl font-bold text-foreground mb-4">Non-Returnable Items</h2>
+            <p className="text-muted-foreground mb-4">For hygiene, customization, and fairness reasons, we do not accept returns on:</p>
+            <ul className="text-muted-foreground space-y-2">
+              <li className="flex items-center gap-3"><X className="text-red-600 flex-shrink-0" size={18} /><span>Customized or tailor-made products</span></li>
+              <li className="flex items-center gap-3"><X className="text-red-600 flex-shrink-0" size={18} /><span>Stitched or altered blouse pieces</span></li>
+              <li className="flex items-center gap-3"><X className="text-red-600 flex-shrink-0" size={18} /><span>Washed or worn sarees</span></li>
+              <li className="flex items-center gap-3"><X className="text-red-600 flex-shrink-0" size={18} /><span>Products marked as “Final Sale”</span></li>
             </ul>
           </section>
 
-          <section className="mb-8">
-            <h2 className="font-display text-2xl font-bold text-foreground mb-4">Damaged or Defective Items</h2>
-            <p className="text-muted-foreground">
-              If your product arrives damaged, defective, or incorrect, please contact us within 48 hours of delivery with photos and your order number.
+          <section className="mb-12">
+            <h2 className="font-display text-2xl font-bold text-foreground mb-4">How to Initiate a Return or Exchange</h2>
+            <div className="bg-card border border-border p-8 rounded-xl">
+              <ol className="text-muted-foreground space-y-4 mb-6">
+                <li className="flex gap-4">
+                  <span className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold">1</span>
+                  <span>Log in to your Parampare account</span>
+                </li>
+                <li className="flex gap-4">
+                  <span className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold">2</span>
+                  <span>Go to My Orders</span>
+                </li>
+                <li className="flex gap-4">
+                  <span className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold">3</span>
+                  <span>Select the order you wish to return or exchange</span>
+                </li>
+                <li className="flex gap-4">
+                  <span className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold">4</span>
+                  <span>Submit your request</span>
+                </li>
+              </ol>
+              <p className="text-sm text-muted-foreground italic text-center">Once we receive your request, our team will review it and provide further instructions within 24–48 business hours.</p>
+            </div>
+          </section>
+
+          <section className="mb-12">
+            <h2 className="font-display text-2xl font-bold text-foreground mb-4">Refund Policy</h2>
+            <p className="text-muted-foreground mb-4">
+              Refunds are processed within 7–10 business days after the product passes quality inspection.
             </p>
+            <p className="font-semibold text-foreground mb-2">Refund options include:</p>
+            <ul className="text-muted-foreground space-y-1 mb-4">
+              <li>• Original payment method (card, UPI, net banking, wallet)</li>
+              <li>• Store credit (if preferred)</li>
+            </ul>
+            <p className="text-xs text-muted-foreground italic">Please note that banks or payment providers may take additional time to reflect the refunded amount.</p>
+          </section>
+
+          <section className="mb-12">
+            <h2 className="font-display text-2xl font-bold text-foreground mb-4">Damaged, Defective, or Incorrect Items</h2>
+            <p className="text-muted-foreground mb-4">If your product arrives damaged or incorrect, please contact us within 48 hours of delivery with:</p>
+            <ul className="text-muted-foreground space-y-2 mb-6">
+              <li>• Your order number</li>
+              <li>• Clear photos of the product and packaging</li>
+              <li>• A brief description of the issue</li>
+            </ul>
+            <p className="text-primary font-medium">After verification, we will arrange a replacement or refund at no additional cost.</p>
           </section>
 
           <section className="bg-primary/5 p-8 rounded-xl">
-            <h2 className="font-display text-2xl font-bold text-foreground mb-4">Contact Us</h2>
-            <a href="mailto:support@parampare.com" className="flex items-center gap-2 text-primary hover:underline">
-              <Mail size={18} /> support@parampare.com
-            </a>
-            <p className="text-muted-foreground text-sm mt-2">Business Hours: Mon–Sat, 10 AM – 6 PM</p>
+            <h2 className="font-display text-2xl font-bold text-foreground mb-4">Important Note on Handloom Products</h2>
+            <p className="text-muted-foreground mb-4 italic">
+              Slight variations in weave, texture, or color are natural characteristics of authentic Ilkal sarees. These are not defects but a mark of genuine handwoven craftsmanship, making every saree unique.
+            </p>
+            <div className="flex flex-col gap-3">
+              <p className="text-foreground font-semibold">Contact Us:</p>
+              <a href="mailto:support@parampare.com" className="flex items-center gap-2 text-primary hover:underline">
+                <Mail size={18} /> support@parampare.com
+              </a>
+              <p className="text-muted-foreground text-sm">Monday – Saturday, 10 AM – 6 PM</p>
+            </div>
           </section>
         </div>
       </main>

@@ -5,7 +5,6 @@ import category3 from "@/assets/category-3.png";
 import category4 from "@/assets/category-4.png";
 
 const categories = [
-  { name: "Ilkal Sarees", image: category1, href: "/products?category=ilkal" },
   { name: "Silk Sarees", image: category2, href: "/products?category=silk" },
   { name: "Cotton Sarees", image: category3, href: "/products?category=cotton" },
   { name: "Bridal Collection", image: category4, href: "/products?category=bridal" },
@@ -47,10 +46,10 @@ const CircleCategories = () => {
       <div className="container mx-auto">
         {/* Section Header */}
         <div className="text-center mb-10 md:mb-14">
-          <span className="inline-block text-gold font-body text-xs tracking-[0.25em] uppercase mb-3 text-center w-full">
+          <span className="inline-block text-gold font-body text-sm md:text-base tracking-[0.25em] uppercase mb-3 text-center w-full">
             Our Collections
           </span>
-          <h2 className="text-3xl md:text-5xl font-display font-medium text-foreground text-center">
+          <h2 className="text-2xl md:text-4xl font-display font-medium text-foreground text-center">
             Shop by Category
           </h2>
         </div>

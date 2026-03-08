@@ -51,7 +51,19 @@ const CategoryPage = () => {
             setCategory(currentCat);
             if (subslug) {
               const currentSub = catRes.data.find(c => c.slug === subslug);
-              setSubcategory(currentSub || null);
+              if (currentSub) {
+                setSubcategory(currentSub);
+              } else if (subslug === "silk-and-cotton-material") {
+                // Mock subcategory if not in DB yet
+                setSubcategory({ 
+                  _id: "silk-and-cotton-manual", 
+                  name: "Silk and Cotton Material", 
+                  slug: "silk-and-cotton-material", 
+                  level: 1 
+                });
+              } else {
+                setSubcategory(null);
+              }
             } else {
               setSubcategory(null);
             }

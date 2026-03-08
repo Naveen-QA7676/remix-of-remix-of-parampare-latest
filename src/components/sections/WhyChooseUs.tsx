@@ -1,8 +1,8 @@
 import { Shield, Truck, RefreshCw, Headphones } from "lucide-react";
 
 const features = [
-  { icon: Shield, title: "100% Authentic", description: "Genuine handwoven Ilkal sarees" },
-  { icon: Truck, title: "Pan-India Delivery", description: "Fast & secure shipping" },
+  { icon: Shield, title: "Direct from Weaver", description: "Authentic handwoven Ilkal sarees" },
+  { icon: Truck, title: "Free Shipping ₹3999+", description: "On all orders across India" },
   { icon: RefreshCw, title: "Easy Returns", description: "7-day hassle-free returns" },
   { icon: Headphones, title: "24/7 Support", description: "Dedicated customer care" },
 ];

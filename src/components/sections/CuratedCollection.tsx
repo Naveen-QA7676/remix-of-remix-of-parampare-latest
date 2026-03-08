@@ -29,11 +29,11 @@ const CuratedCollection = () => {
       
       <div className="container mx-auto px-4 relative">
         <div className="text-center mb-12 opacity-0 animate-fade-in" style={{ animationDelay: "0.2s" }}>
-          <span className="inline-flex items-center gap-2 text-gold font-body text-sm tracking-[0.2em] uppercase">
+          <span className="inline-flex items-center gap-2 text-gold font-body text-sm md:text-base tracking-[0.2em] uppercase">
             <Sparkles className="h-4 w-4" />
             Specially Selected
           </span>
-          <h2 className="font-display text-3xl md:text-5xl font-bold text-foreground mt-2">
+          <h2 className="font-display text-2xl md:text-4xl font-bold text-foreground mt-2">
             Curated For You
           </h2>
           <div className="w-24 h-1 bg-gradient-to-r from-transparent via-gold to-transparent mx-auto mt-4" />

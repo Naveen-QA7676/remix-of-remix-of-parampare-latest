@@ -57,9 +57,9 @@ const HeroSection = () => {
             className="font-display text-5xl md:text-7xl lg:text-8xl font-semibold text-foreground leading-[1.1] tracking-tight opacity-0 animate-fade-in" 
             style={{ animationDelay: "0.4s" }}
           >
-            Authentic
+            Threads of
             <span className="block text-gold mt-2">
-              Ilkal Sarees
+              Tradition
             </span>
           </h2>
           
@@ -95,7 +95,7 @@ const HeroSection = () => {
             className="flex flex-wrap gap-8 pt-8 opacity-0 animate-fade-in" 
             style={{ animationDelay: "1s" }}
           >
-            {["100% Handwoven", "Direct from Artisans", "Free Shipping ₹2999+"].map((badge) => (
+            {["100% Handwoven", "Direct from Weaver", "Free Shipping ₹3999+"].map((badge) => (
               <span 
                 key={badge} 
                 className="flex items-center gap-2.5 text-sm text-muted-foreground font-body"

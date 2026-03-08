@@ -3,18 +3,18 @@ import { Tag, Gift, Truck } from "lucide-react";
 const promos = [
   {
     icon: Tag,
-    title: "Use Code: KOSKILUV10",
-    subtitle: "Get 10% off on orders above ₹5999",
+    title: "Use Code: FIRSTWEAVE",
+    subtitle: "Flat ₹199 OFF on your first order",
   },
   {
     icon: Gift,
     title: "First App Order?",
-    subtitle: "Enjoy 15% off on orders above ₹7999",
+    subtitle: "Enjoy 15% OFF on your first purchase",
   },
   {
     icon: Truck,
     title: "Free Shipping",
-    subtitle: "On all orders above ₹2999",
+    subtitle: "On all orders above ₹3999",
   },
 ];
 

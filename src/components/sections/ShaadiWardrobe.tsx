@@ -41,10 +41,10 @@ const ShaadiWardrobe = () => {
       <div className="container mx-auto px-4 relative">
         {/* Section Header - Modern & Minimal */}
         <div className="text-center mb-14 opacity-0 animate-fade-in" style={{ animationDelay: "0.1s" }}>
-          <span className="inline-block text-gold font-body text-xs tracking-[0.25em] uppercase mb-3">
+          <span className="inline-block text-gold font-body text-sm md:text-base tracking-[0.25em] uppercase mb-3 text-center w-full">
             Wedding Season
           </span>
-          <h2 className="font-display text-3xl md:text-5xl font-medium text-foreground">
+          <h2 className="font-display text-2xl md:text-4xl font-medium text-foreground text-center">
             Your Shaadi Wardrobe
           </h2>
           <p className="text-muted-foreground mt-4 max-w-lg mx-auto font-body text-base">

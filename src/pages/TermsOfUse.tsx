@@ -17,47 +17,72 @@ const TermsOfUse = () => {
           <h1 className="font-display text-4xl md:text-5xl font-bold text-foreground mb-6">
             📜 Terms of Use
           </h1>
+          
+          <h2 className="text-2xl font-semibold text-primary mb-4">
+            Governing the Use of Parampare Website & Services
+          </h2>
 
-          <div className="space-y-8 text-muted-foreground">
-            <section>
-              <h2 className="font-display text-xl font-bold text-foreground mb-3">1. Use of Website</h2>
-              <p>You agree to use this website only for lawful purposes and in a manner that does not violate any applicable laws or regulations.</p>
+          <p className="text-lg text-muted-foreground mb-8">
+            Welcome to Parampare. By accessing or using our website, you agree to be bound by these Terms of Use. If you do not agree with any part of these terms, please refrain from using our services. These terms apply to all visitors, users, and customers who access or use our platform to browse or buy authentic Ilkal sarees online.
+          </p>
+
+          <div className="space-y-10 text-muted-foreground">
+            <section tabIndex={0} className="focus:outline-none focus:ring-2 focus:ring-primary/20 rounded-lg transition-all">
+              <h2 className="font-display text-xl font-bold text-foreground mb-3">1. Use of Website and Services</h2>
+              <p>You agree to use this website only for lawful purposes. You are prohibited from using the site to engage in any activity that violates local, national, or international laws or regulations, including unauthorized access to our systems or interference with the website’s functionality.</p>
             </section>
 
-            <section>
-              <h2 className="font-display text-xl font-bold text-foreground mb-3">2. Product Information</h2>
-              <p>We make every effort to display accurate product details, images, and prices. As our sarees are handwoven, slight variations in color, texture, or weave are natural and are not considered defects.</p>
+            <section tabIndex={0} className="focus:outline-none focus:ring-2 focus:ring-primary/20 rounded-lg transition-all">
+              <h2 className="font-display text-xl font-bold text-foreground mb-3">2. Product Information and Accuracy</h2>
+              <p>We strive to provide accurate descriptions, images, and pricing for our handwoven Ilkal sarees. However, as our products are handcrafted using traditional weaving techniques, slight variations in color, texture, weave, and pattern are natural and are not considered defects. These variations are the hallmark of authentic handloom products.</p>
+              <p className="mt-2 text-sm italic">Colors may also appear slightly different based on your screen settings and resolution.</p>
             </section>
 
-            <section>
-              <h2 className="font-display text-xl font-bold text-foreground mb-3">3. Orders & Acceptance</h2>
-              <p>Placing an order on Parampare constitutes a request to purchase. We reserve the right to accept or reject any order at our discretion. An order is confirmed only after you receive an order confirmation message.</p>
+            <section tabIndex={0} className="focus:outline-none focus:ring-2 focus:ring-primary/20 rounded-lg transition-all">
+              <h2 className="font-display text-xl font-bold text-foreground mb-3">3. Orders, Pricing, and Acceptance</h2>
+              <p>Placing an order on Parampare constitutes an offer to purchase. We reserve the right to accept, reject, or cancel any order at our discretion, including in cases of pricing errors, stock unavailability, or suspected fraudulent activity. An order is considered confirmed only after you receive an official order confirmation from us.</p>
+              <p className="mt-2">All prices are listed in Indian Rupees (₹) and are subject to change without prior notice. Any applicable taxes or shipping fees will be clearly displayed at checkout.</p>
             </section>
 
-            <section>
-              <h2 className="font-display text-xl font-bold text-foreground mb-3">4. Pricing</h2>
-              <p>All prices are listed in Indian Rupees (₹). Prices may change without prior notice.</p>
+            <section tabIndex={0} className="focus:outline-none focus:ring-2 focus:ring-primary/20 rounded-lg transition-all">
+              <h2 className="font-display text-xl font-bold text-foreground mb-3">4. Intellectual Property Rights</h2>
+              <p>All content on this website—including text, high-resolution product photography, logos, icons, designs, and brand names—is the exclusive property of Parampare or its content suppliers. Reproduction, distribution, or unauthorized use of any material without our explicit written permission is strictly prohibited.</p>
             </section>
 
-            <section>
-              <h2 className="font-display text-xl font-bold text-foreground mb-3">5. Intellectual Property</h2>
-              <p>All content on this website, including text, images, logos, and designs, is the property of Parampare and may not be copied, reproduced, or used without written permission.</p>
+            <section tabIndex={0} className="focus:outline-none focus:ring-2 focus:ring-primary/20 rounded-lg transition-all">
+              <h2 className="font-display text-xl font-bold text-foreground mb-3">5. User Accounts and Security</h2>
+              <p>If you create an account on Parampare, you are responsible for maintaining the confidentiality of your login credentials. You agree to notify us immediately of any unauthorized use of your account. Parampare handles user data in accordance with our Privacy Policy.</p>
             </section>
 
-            <section>
+            <section tabIndex={0} className="focus:outline-none focus:ring-2 focus:ring-primary/20 rounded-lg transition-all">
               <h2 className="font-display text-xl font-bold text-foreground mb-3">6. Limitation of Liability</h2>
-              <p>Parampare shall not be liable for any indirect, incidental, or consequential damages arising from the use of this website or products purchased through it.</p>
+              <p>To the maximum extent permitted by law, Parampare shall not be liable for any indirect, incidental, or consequential damages arising from your use of the website or the purchase of products. We do not guarantee that the website will be error-free or uninterrupted at all times.</p>
             </section>
 
-            <section>
-              <h2 className="font-display text-xl font-bold text-foreground mb-3">7. Changes to Terms</h2>
-              <p>We may update these Terms of Use from time to time. Continued use of the website signifies acceptance of the updated terms.</p>
+            <section tabIndex={0} className="focus:outline-none focus:ring-2 focus:ring-primary/20 rounded-lg transition-all">
+              <h2 className="font-display text-xl font-bold text-foreground mb-3">7. External Links</h2>
+              <p>Our website may contain links to third-party websites for your convenience. Parampare does not endorse or take responsibility for the content, policies, or practices of these external sites.</p>
             </section>
 
-            <section className="bg-primary/5 p-6 rounded-xl">
-              <h2 className="font-display text-xl font-bold text-foreground mb-3">8. Contact Us</h2>
-              <p>For any questions regarding these terms, please contact us at:</p>
-              <a href="mailto:support@parampare.in" className="text-primary hover:underline">📧 support@parampare.in</a>
+            <section tabIndex={0} className="focus:outline-none focus:ring-2 focus:ring-primary/20 rounded-lg transition-all">
+              <h2 className="font-display text-xl font-bold text-foreground mb-3">8. Governing Law and Jurisdiction</h2>
+              <p>These Terms of Use are governed by the laws of India. Any disputes arising from the use of this website shall be subject to the exclusive jurisdiction of the courts in Bagalkot, Karnataka.</p>
+            </section>
+
+            <section tabIndex={0} className="focus:outline-none focus:ring-2 focus:ring-primary/20 rounded-lg transition-all">
+              <h2 className="font-display text-xl font-bold text-foreground mb-3">9. Changes to Terms</h2>
+              <p>We reserve the right to modify these Terms of Use at any time. Any changes will be posted on this page with an updated "Last Modified" date. Your continued use of the website signifies your acceptance of the revised terms.</p>
+            </section>
+
+            <section className="bg-primary/5 p-8 rounded-xl border border-primary/10">
+              <h2 className="font-display text-xl font-bold text-foreground mb-3">10. Contact Information</h2>
+              <p className="mb-4">If you have any questions or require clarification regarding these Terms of Use, please reach out to us:</p>
+              <div className="flex flex-col gap-2">
+                <a href="mailto:support@parampare.in" className="text-primary font-medium hover:underline flex items-center gap-2">
+                  <span>📩</span> support@parampare.in
+                </a>
+                <p className="text-sm">Parampare Saree House, Ilkal, Karnataka, India.</p>
+              </div>
             </section>
           </div>
         </div>

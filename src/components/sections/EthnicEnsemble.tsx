@@ -52,10 +52,10 @@ const EthnicEnsemble = () => {
     <section className="py-20 md:py-28 bg-background relative overflow-hidden font-body">
       <div className="container mx-auto px-4 relative border-t border-border/50 pt-16">
         <div className="text-center mb-14 opacity-0 animate-fade-in" style={{ animationDelay: "0.1s" }}>
-          <span className="inline-block text-gold font-body text-xs tracking-[0.25em] uppercase mb-3 text-center w-full">
+          <span className="inline-block text-gold font-body text-sm md:text-base tracking-[0.25em] uppercase mb-3 text-center w-full">
             Style Collections
           </span>
-          <h2 className="font-display text-3xl md:text-5xl font-medium text-foreground text-center">
+          <h2 className="font-display text-2xl md:text-4xl font-medium text-foreground text-center">
             Ethnic Ensemble
           </h2>
         </div>
