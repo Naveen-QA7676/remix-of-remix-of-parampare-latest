@@ -102,6 +102,7 @@ import apiClient from "@/lib/apiClient";
 const MyOrders = () => {
   const navigate = useNavigate();
   const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
@@ -134,6 +135,7 @@ const MyOrders = () => {
             trackingNumber: o.trackingNumber,
           }));
           setOrders(mapped);
+          setLoading(false);
           return;
         } catch (err) {
           console.error("Load orders failed:", err);
@@ -142,6 +144,7 @@ const MyOrders = () => {
       // localStorage fallback
       const savedOrders = JSON.parse(localStorage.getItem("orders") || "[]");
       setOrders(savedOrders);
+      setLoading(false);
     };
 
     loadOrders();
@@ -169,6 +172,10 @@ const MyOrders = () => {
         return "bg-gray-100 text-gray-800";
     }
   };
+
+  if (loading) {
+    return <div className="min-h-screen font-body flex items-center justify-center">Loading orders...</div>;
+  }
 
   if (orders.length === 0) {
     return (
@@ -243,6 +250,7 @@ const MyOrders = () => {
                   <p className="text-muted-foreground">ORDER # {order.id}</p>
                   <Link
                     to={`/orders/${order._id || order.id}`}
+                    state={{ order }}
                     className="text-gold hover:underline text-sm"
                   >
                     View order details

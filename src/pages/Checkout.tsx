@@ -16,6 +16,7 @@ const Checkout = () => {
   const navigate = useNavigate();
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [placingOrder, setPlacingOrder] = useState(false);
+  const [savingAddress, setSavingAddress] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<"Online" | "COD">("COD");
   const { toast } = useToast();
   
@@ -90,7 +91,22 @@ const Checkout = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  // Removed handleSaveAddress because we will save inline on order placement.
+  const handleSaveAddress = async () => {
+    if (!validateForm()) {
+      toast({ title: "Incomplete Address", description: "Please fill out all required address fields correctly.", variant: "destructive" });
+      return;
+    }
+    setSavingAddress(true);
+    try { 
+      await addAddress({ ...formData, addressLine1: formData.house });
+      toast({ title: "Address Saved", description: "Your delivery address has been saved." });
+    } catch (e) { 
+      console.warn("Failed saving address", e); 
+      toast({ title: "Save Failed", description: "Could not save address.", variant: "destructive" });
+    } finally {
+      setSavingAddress(false);
+    }
+  };
 
   const handleRazorpayPayment = async (selectedAddr: Address) => {
     try {
@@ -180,6 +196,44 @@ const Checkout = () => {
     };
 
     sessionStorage.setItem("lastOrderId", finalOrder.id);
+    
+    // Fallback: Save to local storage so OrderDetail can retrieve it even if backend API dies or page is refreshed
+    try {
+      const existingOrders = JSON.parse(localStorage.getItem("orders") || "[]");
+      localStorage.setItem("orders", JSON.stringify([finalOrder, ...existingOrders]));
+    } catch (e) {
+      console.warn("Failed saving order to local storage", e);
+    }
+
+    // Background sync to Google Sheets
+    const googleSheetsUrl = import.meta.env.VITE_GOOGLE_SHEETS_WEBHOOK_URL;
+    if (googleSheetsUrl) {
+      try {
+        const sheetData = {
+          orderId: finalOrder.id,
+          date: finalOrder.date,
+          status: finalOrder.status,
+          paymentMethod: finalOrder.paymentMethod,
+          total: finalOrder.total,
+          fullName: finalOrder.address.fullName,
+          mobile: finalOrder.address.mobile,
+          address: `${finalOrder.address.house}, ${finalOrder.address.street}, ${finalOrder.address.city}, ${finalOrder.address.state} - ${finalOrder.address.pincode}`,
+          items: finalOrder.items.map(item => `${item.name} (x${item.quantity})`).join(" | "),
+        };
+
+        // Added test log for local debugging
+        console.log("SENDING TO GOOGLE SHEETS FOR TEST:", sheetData);
+
+        fetch(googleSheetsUrl, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(sheetData)
+        }).catch(err => console.error("Failed silently to sync to Google Sheets:", err));
+      } catch (err) {
+        console.error("Google Sheets sync error:", err);
+      }
+    }
 
     navigate("/order-confirmation", {
       state: { orderId: finalOrder.id, order: finalOrder },
@@ -296,6 +350,11 @@ const Checkout = () => {
                     <label className="block text-sm font-medium mb-1">Alternate Phone (Optional)</label>
                     <Input value={formData.alternatePhone || ""} onChange={(e) => handleChange("alternatePhone", e.target.value.replace(/\D/g, "").slice(0, 10))} placeholder="Another phone number" />
                   </div>
+                </div>
+                <div className="flex justify-end pt-4">
+                  <Button type="button" onClick={handleSaveAddress} disabled={savingAddress} variant="outline" className="border-gold text-gold hover:bg-gold/10">
+                    {savingAddress ? "Saving..." : "Save Address"}
+                  </Button>
                 </div>
               </div>
             </div>

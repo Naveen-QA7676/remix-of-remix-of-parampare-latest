@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams, useLocation } from "react-router-dom";
 import { Package, Truck, CheckCircle2, Clock, PackageCheck, Home, MapPin, CreditCard, Banknote, ArrowLeft, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import TopUtilityHeader from "@/components/layout/TopUtilityHeader";
@@ -107,8 +107,9 @@ const OrderTrackingSteps = ({ status }: { status: string }) => {
 const OrderDetail = () => {
   const { orderId } = useParams();
   const navigate = useNavigate();
-  const [order, setOrder] = useState<Order | null>(null);
-  const [loading, setLoading] = useState(true);
+  const location = useLocation();
+  const [order, setOrder] = useState<Order | null>((location.state as any)?.order || null);
+  const [loading, setLoading] = useState(!((location.state as any)?.order));
 
   useEffect(() => {
     const fetchOrder = async () => {
@@ -147,8 +148,10 @@ const OrderDetail = () => {
       }
     };
 
-    fetchOrder();
-  }, [orderId]);
+    if (!order) {
+      fetchOrder();
+    }
+  }, [orderId, order]);
 
   if (loading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   if (!order) return (

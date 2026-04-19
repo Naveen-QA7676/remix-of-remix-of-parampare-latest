@@ -94,7 +94,11 @@ const OrderConfirmation = () => {
 
     // Auto-redirect to order details after 8 seconds
     const timer = setTimeout(() => {
-      navigate(`/orders/${orderId}`);
+      if (order) {
+        navigate(`/orders/${orderId}`, { state: { order } });
+      } else {
+        navigate(`/orders/${orderId}`);
+      }
     }, 8000);
 
     return () => clearTimeout(timer);
