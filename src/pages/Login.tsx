@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,6 +19,16 @@ const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
+
+  useEffect(() => {
+    // Check if we have credentials passed from registration
+    if (location.state?.email) {
+      setEmail(location.state.email);
+    }
+    if (location.state?.password) {
+      setPassword(location.state.password);
+    }
+  }, [location.state]);
 
   const returnTo = location.state?.returnTo || "/";
 

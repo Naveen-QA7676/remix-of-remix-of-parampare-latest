@@ -95,10 +95,11 @@ const Register = () => {
 
         toast({
           title: "Registration Successful",
-          description: "Sending OTP...",
+          description: "Your account has been created. Please login to continue.",
         });
 
-        // Send OTP
+        // Skip OTP verification for now
+        /*
         const otpRes = await apiClient.post("/auth/send-otp", {
           mobile: formData.mobile,
           type: "register"
@@ -117,15 +118,13 @@ const Register = () => {
              description: "Please check your mobile number.",
            });
         }
+        */
 
-        // Store user data context for OTP verification if needed
-        navigate("/verify-otp", { 
+        // Direct navigation to login with credentials
+        navigate("/login", { 
           state: { 
-            identifier: formData.mobile, 
-            isLogin: false,
-            userData: formData,
-            apiResponse: data, // Pass registration data
-            returnTo: "/" 
+            email: formData.email,
+            password: formData.password
           } 
         });
       } catch (error: any) {
