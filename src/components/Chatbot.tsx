@@ -62,7 +62,7 @@ const getSmartResponse = (userMessage: string): string => {
   
   // Contact queries
   if (message.includes("contact") || message.includes("call") || message.includes("phone") || message.includes("email")) {
-    return "You can reach us at:\n📞 +91 87221 16959\n📧 hello@parampare.com\n💬 WhatsApp: Click the green icon below\n\nWe're available 9 AM - 9 PM IST!";
+    return "You can reach us at:\n📞 +91 7676295599\n📧 parampare@paramparee.com\n💬 WhatsApp: Click the green icon below\n\nWe're available 9 AM - 9 PM IST!";
   }
   
   // Greetings
@@ -74,7 +74,7 @@ const getSmartResponse = (userMessage: string): string => {
   }
   
   // Default smart response
-  return "Thank you for your query! I can help you with:\n\n• Finding sarees by fabric, occasion, or style\n• Delivery & tracking information\n• Returns and exchanges\n• Payment options\n\nPlease ask a specific question, or contact us at +91 87221 16959 for personalized assistance.";
+  return "Thank you for your query! I can help you with:\n\n• Finding sarees by fabric, occasion, or style\n• Delivery & tracking information\n• Returns and exchanges\n• Payment options\n\nPlease ask a specific question, or contact us at +91 7676295599 for personalized assistance.";
 };
 
 const Chatbot = forwardRef<HTMLDivElement>((_, ref) => {

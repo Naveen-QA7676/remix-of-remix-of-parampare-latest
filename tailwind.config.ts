@@ -73,8 +73,9 @@ export default {
         },
       },
       fontFamily: {
-        display: ["DM Sans", "sans-serif"],
-        body: ["DM Sans", "sans-serif"],
+        display: ["Playfair Display", "serif"],
+        body: ["Inter", "sans-serif"],
+        poppins: ["Poppins", "sans-serif"],
       },
       borderRadius: {
         lg: "var(--radius)",

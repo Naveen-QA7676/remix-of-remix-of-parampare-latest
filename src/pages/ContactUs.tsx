@@ -30,8 +30,8 @@ const ContactUs = () => {
                 </div>
                 <div>
                   <h3 className="font-semibold text-foreground mb-1">Email</h3>
-                  <a href="mailto:support@parampare.com" className="text-primary hover:underline">
-                    support@parampare.com
+                  <a href="mailto:parampare@paramparee.com" className="text-primary hover:underline">
+                    parampare@paramparee.com
                   </a>
                 </div>
               </div>
@@ -42,8 +42,8 @@ const ContactUs = () => {
                 </div>
                 <div>
                   <h3 className="font-semibold text-foreground mb-1">Phone</h3>
-                  <a href="tel:+919876543210" className="text-primary hover:underline">
-                    +91 87221 16959
+                  <a href="tel:+917676295599" className="text-primary hover:underline">
+                    +91 7676295599
                   </a>
                 </div>
               </div>

@@ -15,6 +15,11 @@ const isLoggedIn = () =>
 
 const Cart = () => {
   const navigate = useNavigate();
+  
+  useEffect(() => {
+    sessionStorage.removeItem("directBuyItem");
+  }, []);
+
   const { cartItems, loading, updateQuantity, removeFromCart: removeItem, subtotal } = useCart();
 
   const deliveryCharge = subtotal >= 999 ? 0 : 99;

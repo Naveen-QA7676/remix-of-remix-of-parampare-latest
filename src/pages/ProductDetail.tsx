@@ -91,8 +91,15 @@ const ProductDetail = () => {
     }
   };
 
-  const handleBuyNow = async () => {
-    await handleAddToCart();
+  const handleBuyNow = () => {
+    const directBuyItem = {
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      quantity: quantity,
+      image: (product.images && product.images.length > 0) ? product.images[0] : "/placeholder.svg"
+    };
+    sessionStorage.setItem("directBuyItem", JSON.stringify(directBuyItem));
     const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
     if (!isLoggedIn) navigate("/login", { state: { returnTo: "/checkout" } });
     else navigate("/checkout");
@@ -126,9 +133,9 @@ const ProductDetail = () => {
       <TopUtilityHeader />
       <MainHeader />
 
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 md:px-8 py-12 md:py-16">
         {/* Breadcrumb */}
-        <nav className="text-sm text-muted-foreground mb-6">
+        <nav className="text-sm text-muted-foreground mb-10">
           <Link to="/" className="hover:text-gold">Home</Link>
           <span className="mx-2">/</span>
           <Link to="/products" className="hover:text-gold">Sarees</Link>
@@ -136,7 +143,7 @@ const ProductDetail = () => {
           <span className="text-foreground">{product.name}</span>
         </nav>
 
-        <div className="grid lg:grid-cols-[3.5fr,6.5fr] gap-6 lg:gap-8">
+        <div className="grid lg:grid-cols-[4.2fr,5.8fr] gap-12 lg:gap-20">
           {/* Left Side - Image Gallery */}
           {/* Image Gallery */}
           <div className="flex flex-col gap-4 w-fit lg:pl-6 mx-auto">
@@ -436,7 +443,7 @@ const ProductDetail = () => {
         </div>
 
         {/* Product Description Section */}
-        <div id="reviews" className="mt-12 grid md:grid-cols-2 gap-8 border-t border-border/50 pt-12">
+        <div id="reviews" className="mt-20 grid md:grid-cols-2 gap-16 border-t border-border/50 pt-20">
           <div className="space-y-4">
             <h2 className="text-xl font-display font-semibold">About the Saree</h2>
             <p className="text-muted-foreground leading-relaxed whitespace-pre-line">

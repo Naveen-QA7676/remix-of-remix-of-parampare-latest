@@ -131,36 +131,30 @@ export const useWishlist = () => {
   );
 
   const addToWishlist = useCallback(async (product: WishlistItem) => {
-    if (isLoggedIn()) {
-      try {
-        const res = await apiClient.post("/wishlist/add", { productId: product.id });
-        if (res.data.items || res.data.data) {
-          const data = res.data;
-          let rawItems = data.items || (Array.isArray(data.data) ? (data.data[0]?.items || data.data) : []);
-          const items = rawItems.map((i: any) => toWishlistItem(i.product || i));
-          globalWishlist = items;
-          setWishlist(items);
-          localStorage.setItem("wishlist", JSON.stringify(items));
-          notifyObservers();
-        } else {
-          loadFromApi();
-        }
-        return true;
-      } catch (err) {
-        console.error("Add to wishlist failed:", err);
-      }
-    }
+    // Optimistic Update
     const updated = [...globalWishlist, product];
     globalWishlist = updated;
     setWishlist(updated);
     localStorage.setItem("wishlist", JSON.stringify(updated));
     notifyObservers();
-    window.dispatchEvent(new Event("wishlistUpdated"));
+    
+    if (isLoggedIn()) {
+      try {
+        await apiClient.post("/wishlist/add", { productId: product.id });
+        // Assume success, do not override with potentially stale backend response return
+      } catch (err) {
+        console.error("Add to wishlist failed, reverting:", err);
+        loadFromApi(); // Revert to backend state
+        return false;
+      }
+    } else {
+      window.dispatchEvent(new Event("wishlistUpdated"));
+    }
     return true;
   }, [loadFromApi]);
 
   const removeFromWishlist = useCallback(async (productId: string) => {
-    // Local update for immediate UI response
+    // Optimistic update
     const updated = globalWishlist.filter((item) => item.id !== productId);
     globalWishlist = updated;
     setWishlist(updated);
@@ -169,51 +163,23 @@ export const useWishlist = () => {
 
     if (isLoggedIn()) {
       try {
-        const res = await apiClient.delete("/wishlist/remove", { data: { productId } });
-        if (res.data.items || res.data.data) {
-          const data = res.data;
-          let rawItems = data.items || (Array.isArray(data.data) ? (data.data[0]?.items || data.data) : []);
-          const items = rawItems.map((i: any) => toWishlistItem(i.product || i));
-          globalWishlist = items;
-          setWishlist(items);
-          localStorage.setItem("wishlist", JSON.stringify(items));
-          notifyObservers();
-        } else {
-          loadFromApi();
-        }
-        return true;
+        await apiClient.delete("/wishlist/remove", { data: { productId } });
+        // Assume success, ignore stale output
       } catch (err) {
-        console.error("Remove from wishlist failed:", err);
+        console.error("Remove from wishlist failed, reverting:", err);
+        loadFromApi();
+        return false;
       }
+    } else {
+      window.dispatchEvent(new Event("wishlistUpdated"));
     }
-    window.dispatchEvent(new Event("wishlistUpdated"));
     return true;
   }, [loadFromApi]);
 
   const toggleWishlist = useCallback(async (product: WishlistItem) => {
     const isCurrentlyIn = isInWishlist(product.id);
     
-    if (isLoggedIn()) {
-      try {
-        const res = await apiClient.post("/wishlist/toggle", { productId: product.id });
-        if (res.data.items || res.data.data) {
-          const data = res.data;
-          let rawItems = data.items || (Array.isArray(data.data) ? (data.data[0]?.items || data.data) : []);
-          const items = rawItems.map((i: any) => toWishlistItem(i.product || i));
-          globalWishlist = items;
-          setWishlist(items);
-          localStorage.setItem("wishlist", JSON.stringify(items));
-          notifyObservers();
-        } else {
-          loadFromApi();
-        }
-        return !isCurrentlyIn;
-      } catch (err) {
-        console.error("Toggle wishlist failed:", err);
-      }
-    }
-    
-    // Local fallback/Guest mode
+    // Optimistic Update
     let updated;
     if (isCurrentlyIn) {
       updated = globalWishlist.filter((item) => item.id !== product.id);
@@ -225,7 +191,19 @@ export const useWishlist = () => {
     setWishlist(updated);
     localStorage.setItem("wishlist", JSON.stringify(updated));
     notifyObservers();
-    window.dispatchEvent(new Event("wishlistUpdated"));
+    
+    if (isLoggedIn()) {
+      try {
+        await apiClient.post("/wishlist/toggle", { productId: product.id });
+        // Assume success, avoid stale backend override
+      } catch (err) {
+        console.error("Toggle wishlist failed, reverting:", err);
+        loadFromApi();
+        return isCurrentlyIn; // Return the previous state since we failed
+      }
+    } else {
+      window.dispatchEvent(new Event("wishlistUpdated"));
+    }
     return !isCurrentlyIn;
   }, [isInWishlist, loadFromApi]);
 

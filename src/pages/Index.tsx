@@ -18,17 +18,19 @@ const Index = () => {
     <div className="min-h-screen bg-background font-body">
       <TopUtilityHeader />
       <MainHeader />
-      <main>
+      <main className="flex flex-col pb-20">
         <HeroSection />
         <PromoBanner />
-        <CircleCategories />
-        <ShaadiWardrobe />
-        <Bestsellers />
-        <PromotionalBanner />
-        <EthnicEnsemble />
-        <CuratedCollection />
-        <WhyChooseUs />
-        <Testimonials />
+        <div className="flex flex-col gap-20 md:gap-32 mt-16 md:mt-24">
+          <CircleCategories />
+          <ShaadiWardrobe />
+          <Bestsellers />
+          <PromotionalBanner />
+          <EthnicEnsemble />
+          <CuratedCollection />
+          <WhyChooseUs />
+          <Testimonials />
+        </div>
       </main>
       <Footer />
       <BackToTop />

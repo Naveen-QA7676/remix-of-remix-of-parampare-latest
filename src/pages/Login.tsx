@@ -337,24 +337,24 @@ const Login = () => {
                   </Button>
 
                   {/* OR Separator */}
-                  <div className="relative flex items-center justify-center">
+                  {/* <div className="relative flex items-center justify-center">
                     <div className="absolute inset-0 flex items-center">
                       <div className="w-full border-t border-border"></div>
                     </div>
                     <div className="relative bg-card px-4">
                       <span className="text-sm text-muted-foreground">OR</span>
                     </div>
-                  </div>
+                  </div> */}
 
                   {/* OTP Alternative */}
-                  <Button 
+                  {/* <Button 
                     variant="outline"
                     onClick={() => switchMode("otp")}
                     className="w-full h-12 gap-2"
                   >
                     <Phone className="h-4 w-4" />
                     Login with OTP
-                  </Button>
+                  </Button> */}
                 </div>
               ) : (
                 /* OTP Login Form */

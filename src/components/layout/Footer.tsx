@@ -28,17 +28,16 @@ const Footer = () => {
             <h4 className="font-display text-3xl font-bold text-gold mb-4">Parampare</h4>
             <p className="font-body text-sm text-muted-foreground mb-6">Bringing authentic Ilkal sarees from Karnataka's finest weavers to your wardrobe.</p>
             <div className="space-y-3 mb-6">
-              <a href="tel:+918722116959" className="flex items-center gap-3 text-sm text-muted-foreground hover:text-gold"><Phone size={16} />+91 87221 16959</a>
-              <a href="mailto:hello@parampare.com" className="flex items-center gap-3 text-sm text-muted-foreground hover:text-gold"><Mail size={16} />hello@parampare.com</a>
+              <a href="tel:+917676295599" className="flex items-center gap-3 text-sm text-muted-foreground hover:text-gold"><Phone size={16} />+91 7676295599</a>
+              <a href="mailto:parampare@paramparee.com" className="flex items-center gap-3 text-sm text-muted-foreground hover:text-gold"><Mail size={16} />parampare@paramparee.com</a>
               <div className="flex items-start gap-3 text-sm text-muted-foreground"><MapPin size={16} className="mt-0.5" />Ilkal, Karnataka, India</div>
             </div>
             <div className="flex space-x-4">
               {[
-                { Icon: Instagram, href: "https://www.instagram.com" },
-                { Icon: Facebook, href: "https://www.facebook.com" },
-                { Icon: Twitter, href: "https://x.com" },
-                { Icon: Youtube, href: "https://www.youtube.com" },
-                { Icon: Linkedin, href: "https://www.linkedin.com" },
+                { Icon: Instagram, href: "https://www.instagram.com/paramparee/" },
+                { Icon: Facebook, href: "https://www.facebook.com/Paramparee/" },
+                { Icon: Youtube, href: "https://www.youtube.com/@ParampareeOfficial" },
+                { Icon: Linkedin, href: "http://www.linkedin.com/in/parampare-threads-of-tradition-692603404" },
               ].map(({ Icon, href }, i) => (
                 <a key={i} href={href} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-muted-foreground/10 flex items-center justify-center text-muted-foreground hover:bg-gold hover:text-accent-foreground transition-all"><Icon size={18} /></a>
               ))}

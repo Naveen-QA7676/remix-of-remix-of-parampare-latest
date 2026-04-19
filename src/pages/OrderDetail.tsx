@@ -6,6 +6,7 @@ import TopUtilityHeader from "@/components/layout/TopUtilityHeader";
 import MainHeader from "@/components/layout/MainHeader";
 import Footer from "@/components/layout/Footer";
 import apiClient from "@/lib/apiClient";
+import InvoicePrint from "@/components/InvoicePrint";
 
 interface OrderItem {
   id: string;
@@ -166,116 +167,122 @@ const OrderDetail = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background font-body">
-      <TopUtilityHeader />
-      <MainHeader />
+    <div className="min-h-screen bg-background font-body relative">
+      <div className="print:hidden">
+        <TopUtilityHeader />
+        <MainHeader />
 
-      <main className="container mx-auto px-4 py-8 max-w-5xl">
-        <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <Button variant="ghost" size="sm" onClick={() => navigate("/orders")} className="mb-2 -ml-2 text-muted-foreground hover:text-gold">
-              <ArrowLeft className="h-4 w-4 mr-2" /> Back to My Orders
-            </Button>
-            <h1 className="text-3xl font-display font-semibold text-foreground">Order Details</h1>
-            <p className="text-muted-foreground mt-1">Order # {order.id} • Placed on {formatDate(order.date)}</p>
-          </div>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={() => window.print()} className="gap-2">
-              <Printer className="h-4 w-4" /> Print Invoice
-            </Button>
-          </div>
-        </div>
-
-        <div className="grid lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 space-y-6">
-            {/* Status Tracking */}
-            <div className="bg-card rounded-xl p-6 border border-border/50 shadow-soft">
-              <h2 className="text-lg font-semibold mb-6 flex items-center gap-2">
-                <Truck className="h-5 w-5 text-gold" /> Order Status
-              </h2>
-              <OrderTrackingSteps status={order.status} />
-              {order.trackingNumber && (
-                <div className="mt-6 p-4 bg-secondary/30 rounded-lg flex items-center justify-between">
-                  <div>
-                    <p className="text-xs text-muted-foreground">Tracking ID</p>
-                    <p className="font-mono font-medium">{order.trackingNumber}</p>
-                  </div>
-                  <Button variant="link" className="text-gold" onClick={() => window.open(`https://tracker.parampara.in/${order.trackingNumber}`, '_blank')}>
-                    Track on carrier site
-                  </Button>
-                </div>
-              )}
+        <main className="container mx-auto px-4 py-8 max-w-5xl">
+          <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <Button variant="ghost" size="sm" onClick={() => navigate("/orders")} className="mb-2 -ml-2 text-muted-foreground hover:text-gold">
+                <ArrowLeft className="h-4 w-4 mr-2" /> Back to My Orders
+              </Button>
+              <h1 className="text-3xl font-display font-semibold text-foreground">Order Details</h1>
+              <p className="text-muted-foreground mt-1">Order # {order.id} • Placed on {formatDate(order.date)}</p>
             </div>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={() => window.print()} className="gap-2">
+                <Printer className="h-4 w-4" /> Print Invoice
+              </Button>
+            </div>
+          </div>
 
-            {/* Items */}
-            <div className="bg-card rounded-xl p-6 border border-border/50 shadow-soft">
-              <h2 className="text-lg font-semibold mb-6 flex items-center gap-2">
-                <Package className="h-5 w-5 text-gold" /> Items Ordered
-              </h2>
-              <div className="space-y-6">
-                {order.items.map((item, i) => (
-                  <div key={i} className="flex gap-4">
-                    <div className="w-20 h-28 rounded-lg overflow-hidden bg-secondary flex-shrink-0">
-                      <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+          <div className="grid lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2 space-y-6">
+              {/* Status Tracking */}
+              <div className="bg-card rounded-xl p-6 border border-border/50 shadow-soft">
+                <h2 className="text-lg font-semibold mb-6 flex items-center gap-2">
+                  <Truck className="h-5 w-5 text-gold" /> Order Status
+                </h2>
+                <OrderTrackingSteps status={order.status} />
+                {order.trackingNumber && (
+                  <div className="mt-6 p-4 bg-secondary/30 rounded-lg flex items-center justify-between">
+                    <div>
+                      <p className="text-xs text-muted-foreground">Tracking ID</p>
+                      <p className="font-mono font-medium">{order.trackingNumber}</p>
                     </div>
-                    <div className="flex-1">
-                      <h4 className="font-medium text-foreground">{item.name}</h4>
-                      <p className="text-sm text-muted-foreground mt-1">Qty: {item.quantity}</p>
-                      <p className="font-semibold text-foreground mt-1">₹{item.price.toLocaleString()}</p>
-                      <Button variant="link" size="sm" className="p-0 h-auto text-gold mt-2" onClick={() => navigate(`/product/${item.id}`)}>
-                        View Item
-                      </Button>
-                    </div>
+                    <Button variant="link" className="text-gold" onClick={() => window.open(`https://tracker.parampara.in/${order.trackingNumber}`, '_blank')}>
+                      Track on carrier site
+                    </Button>
                   </div>
-                ))}
+                )}
+              </div>
+
+              {/* Items */}
+              <div className="bg-card rounded-xl p-6 border border-border/50 shadow-soft">
+                <h2 className="text-lg font-semibold mb-6 flex items-center gap-2">
+                  <Package className="h-5 w-5 text-gold" /> Items Ordered
+                </h2>
+                <div className="space-y-6">
+                  {order.items.map((item, i) => (
+                    <div key={i} className="flex gap-4">
+                      <div className="w-20 h-28 rounded-lg overflow-hidden bg-secondary flex-shrink-0">
+                        <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="font-medium text-foreground">{item.name}</h4>
+                        <p className="text-sm text-muted-foreground mt-1">Qty: {item.quantity}</p>
+                        <p className="font-semibold text-foreground mt-1">₹{item.price.toLocaleString()}</p>
+                        <Button variant="link" size="sm" className="p-0 h-auto text-gold mt-2" onClick={() => navigate(`/product/${item.id}`)}>
+                          View Item
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="lg:col-span-1 space-y-6">
+              {/* Shipping Address */}
+              <div className="bg-card rounded-xl p-6 border border-border/50 shadow-soft">
+                <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                  <MapPin className="h-5 w-5 text-gold" /> Delivery Address
+                </h2>
+                <div className="text-sm space-y-1">
+                  <p className="font-semibold text-base">{order.address.fullName}</p>
+                  <p className="text-muted-foreground">{order.address.house}, {order.address.street}</p>
+                  <p className="text-muted-foreground">{order.address.city}, {order.address.state} - {order.address.pincode}</p>
+                  <p className="text-muted-foreground pt-2">Mobile: <span className="text-foreground">+91 {order.address.mobile}</span></p>
+                </div>
+              </div>
+
+              {/* Payment Summary */}
+              <div className="bg-card rounded-xl p-6 border border-border/50 shadow-soft">
+                <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                  <CreditCard className="h-5 w-5 text-gold" /> Payment Summary
+                </h2>
+                <div className="flex items-center gap-2 mb-6 p-3 bg-secondary/50 rounded-lg">
+                  {order.paymentMethod.includes("Online") ? <CreditCard className="h-4 w-4" /> : <Banknote className="h-4 w-4" />}
+                  <span className="text-sm font-medium">{order.paymentMethod}</span>
+                </div>
+                
+                <div className="space-y-3 text-sm">
+                  <div className="flex justify-between text-muted-foreground">
+                    <span>Subtotal</span>
+                    <span>₹{order.subtotal.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between text-muted-foreground">
+                    <span>Delivery Charge</span>
+                    <span>{order.deliveryCharge === 0 ? "FREE" : `₹${order.deliveryCharge}`}</span>
+                  </div>
+                  <div className="pt-3 border-t border-border flex justify-between text-base font-bold">
+                    <span>Grand Total</span>
+                    <span className="text-gold">₹{order.total.toLocaleString()}</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
+        </main>
 
-          <div className="lg:col-span-1 space-y-6">
-            {/* Shipping Address */}
-            <div className="bg-card rounded-xl p-6 border border-border/50 shadow-soft">
-              <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                <MapPin className="h-5 w-5 text-gold" /> Delivery Address
-              </h2>
-              <div className="text-sm space-y-1">
-                <p className="font-semibold text-base">{order.address.fullName}</p>
-                <p className="text-muted-foreground">{order.address.house}, {order.address.street}</p>
-                <p className="text-muted-foreground">{order.address.city}, {order.address.state} - {order.address.pincode}</p>
-                <p className="text-muted-foreground pt-2">Mobile: <span className="text-foreground">+91 {order.address.mobile}</span></p>
-              </div>
-            </div>
+        <Footer />
+      </div>
 
-            {/* Payment Summary */}
-            <div className="bg-card rounded-xl p-6 border border-border/50 shadow-soft">
-              <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                <CreditCard className="h-5 w-5 text-gold" /> Payment Summary
-              </h2>
-              <div className="flex items-center gap-2 mb-6 p-3 bg-secondary/50 rounded-lg">
-                {order.paymentMethod.includes("Online") ? <CreditCard className="h-4 w-4" /> : <Banknote className="h-4 w-4" />}
-                <span className="text-sm font-medium">{order.paymentMethod}</span>
-              </div>
-              
-              <div className="space-y-3 text-sm">
-                <div className="flex justify-between text-muted-foreground">
-                  <span>Subtotal</span>
-                  <span>₹{order.subtotal.toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between text-muted-foreground">
-                  <span>Delivery Charge</span>
-                  <span>{order.deliveryCharge === 0 ? "FREE" : `₹${order.deliveryCharge}`}</span>
-                </div>
-                <div className="pt-3 border-t border-border flex justify-between text-base font-bold">
-                  <span>Grand Total</span>
-                  <span className="text-gold">₹{order.total.toLocaleString()}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </main>
-
-      <Footer />
+      <div className="hidden print:block absolute inset-0 bg-white">
+        <InvoicePrint order={order} />
+      </div>
     </div>
   );
 };
