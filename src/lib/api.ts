@@ -6,6 +6,8 @@ export interface Category {
   slug: string;
   parent?: string;
   level: number;
+  imageUrl?: string;
+  description?: string;
   children?: Category[];
 }
 
@@ -100,6 +102,14 @@ export const fetchProductById = async (id: string): Promise<{ success: boolean; 
 export const fetchCategories = async (): Promise<{ success: boolean; data: Category[] }> => {
   const response = await apiClient.get("/categories");
   return response.data;
+};
+
+export const getCategoryImageUrl = (url?: string): string | undefined => {
+  if (!url) return undefined;
+  // Handle Windows paths and normalize slashes
+  const normalizedUrl = url.replace(/\\/g, '/');
+  if (normalizedUrl.startsWith("http") || normalizedUrl.startsWith("data:") || normalizedUrl.startsWith("/")) return normalizedUrl;
+  return `/uploads/${normalizedUrl}`;
 };
 
 export const fetchCategoryTree = async (): Promise<{ success: boolean; data: Category[] }> => {

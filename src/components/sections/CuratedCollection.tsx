@@ -2,10 +2,13 @@ import { ArrowRight, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
 import saree1 from "@/assets/saree-1.jpg";
 import saree3 from "@/assets/saree-3.jpg";
+import { useQuery } from "@tanstack/react-query";
+import { fetchCategories, getCategoryImageUrl } from "@/lib/api";
 
-const collections = [
+const staticCollections = [
   {
     title: "Your Shaadi Wardrobe",
+    slug: "shaadi-wardrobe",
     description: "Curated wedding collections for your special day. From bridal reds to festive golds.",
     image: saree1,
     link: "/category/shaadi-wardrobe",
@@ -13,6 +16,7 @@ const collections = [
   },
   {
     title: "Ethnic Ensemble",
+    slug: "ethnic-ensemble",
     description: "Style-based collections for every occasion. Traditional meets contemporary.",
     image: saree3,
     link: "/category/ethnic-ensemble",
@@ -21,6 +25,25 @@ const collections = [
 ];
 
 const CuratedCollection = () => {
+  const { data: categoriesRes } = useQuery({
+    queryKey: ["categories"],
+    queryFn: fetchCategories,
+  });
+
+  const categories = categoriesRes?.data || [];
+
+  const collections = staticCollections.map((staticItem) => {
+    const apiCategory = categories.find((c) => c.slug === staticItem.slug);
+    const apiImageUrl = apiCategory?.imageUrl ? getCategoryImageUrl(apiCategory.imageUrl) : undefined;
+    
+    return {
+      ...staticItem,
+      title: apiCategory?.name || staticItem.title,
+      description: apiCategory?.description || staticItem.description,
+      image: apiImageUrl || staticItem.image,
+    };
+  });
+
   return (
     <section className="py-12 md:py-16 bg-cream relative overflow-hidden">
       {/* Background Decoration */}

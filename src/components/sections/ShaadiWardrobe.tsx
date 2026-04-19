@@ -4,28 +4,34 @@ import saree1 from "@/assets/saree-1.jpg";
 import saree2 from "@/assets/saree-2.jpg";
 import saree3 from "@/assets/saree-3.jpg";
 import saree4 from "@/assets/saree-4.jpg";
+import { useQuery } from "@tanstack/react-query";
+import { fetchCategoryTree, getCategoryImageUrl } from "@/lib/api";
 
-const collections = [
+const staticCollections = [
   {
     title: "Bridal Sarees",
+    slug: "bridal-sarees",
     subtitle: "For the Big Day",
     image: saree1,
     href: "/category/shaadi-wardrobe/bridal-sarees",
   },
   {
     title: "Mehendi Collection",
+    slug: "mehendi-collections",
     subtitle: "Vibrant & Playful",
     image: saree2,
     href: "/category/shaadi-wardrobe/mehendi-collections",
   },
   {
     title: "Sangeet Specials",
+    slug: "sangeet-specials",
     subtitle: "Dance-Ready Drapes",
     image: saree3,
     href: "/category/shaadi-wardrobe/sangeet-specials",
   },
   {
     title: "Reception Elegance",
+    slug: "reception-elegance",
     subtitle: "Grand Finales",
     image: saree4,
     href: "/category/shaadi-wardrobe/reception-elegance",
@@ -33,6 +39,23 @@ const collections = [
 ];
 
 const ShaadiWardrobe = () => {
+  const { data: treeRes } = useQuery({
+    queryKey: ["categoryTree"],
+    queryFn: fetchCategoryTree,
+  });
+
+  const shaadiCategory = treeRes?.data?.find(c => c.slug === "shaadi-wardrobe");
+  const apiCollections = shaadiCategory?.children || [];
+
+  const collections = apiCollections.length > 0
+    ? apiCollections.map((cat, i) => ({
+        title: cat.name,
+        subtitle: cat.description || "Wedding Special",
+        image: getCategoryImageUrl(cat.imageUrl) || [saree1, saree2, saree3, saree4][i % 4],
+        href: `/category/shaadi-wardrobe/${cat.slug}`,
+      }))
+    : staticCollections;
+
   return (
     <section id="shaadi-wardrobe" className="py-12 md:py-16 bg-secondary relative overflow-hidden">
       {/* Modern Gradient Background */}

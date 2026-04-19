@@ -4,16 +4,10 @@ import category1 from "@/assets/category-1.png";
 import category2 from "@/assets/category-2.png";
 import category3 from "@/assets/category-3.png";
 import category4 from "@/assets/category-4.png";
+import { useQuery } from "@tanstack/react-query";
+import { fetchCategoryTree, getCategoryImageUrl } from "@/lib/api";
 
-const categories = [
-  { name: "Silk Sarees", image: category2, href: "/category/shop-by-category/silk-sarees" },
-  { name: "Cotton Sarees", image: category3, href: "/category/shop-by-category/cotton-sarees" },
-  { name: "Bridal Collection", image: category4, href: "/category/shop-by-category/bridal-collection" },
-  { name: "Festive Wear", image: category1, href: "/category/occasions/festive-wear" },
-  { name: "Daily Wear", image: category2, href: "/category/shop-by-category/daily-wear" },
-];
-
-const CircleCard = ({ category, index }: { category: typeof categories[0]; index: number }) => {
+const CircleCard = ({ category, index }: { category: { name: string; image: string; href: string }; index: number }) => {
   return (
     <Link
       to={category.href}
@@ -41,7 +35,31 @@ const CircleCard = ({ category, index }: { category: typeof categories[0]; index
   );
 };
 
+const staticCategories = [
+  { name: "Silk Sarees", image: category2, href: "/category/shop-by-category/silk-sarees" },
+  { name: "Cotton Sarees", image: category3, href: "/category/shop-by-category/cotton-sarees" },
+  { name: "Bridal Collection", image: category4, href: "/category/shop-by-category/bridal-collection" },
+  { name: "Festive Wear", image: category1, href: "/category/occasions/festive-wear" },
+  { name: "Daily Wear", image: category2, href: "/category/shop-by-category/daily-wear" },
+];
+
 const CircleCategories = () => {
+  const { data: treeRes } = useQuery({
+    queryKey: ["categoryTree"],
+    queryFn: fetchCategoryTree,
+  });
+
+  const shopByCategory = treeRes?.data?.find(c => c.slug === "shop-by-category");
+  const apiCategories = shopByCategory?.children || [];
+
+  const categories = apiCategories.length > 0
+    ? apiCategories.map((cat, i) => ({
+        name: cat.name,
+        image: getCategoryImageUrl(cat.imageUrl) || [category1, category2, category3, category4][i % 4],
+        href: `/category/shop-by-category/${cat.slug}`,
+      }))
+    : staticCategories;
+
   return (
     <section className="py-12 md:py-16 px-4 bg-background">
       <div className="container mx-auto">

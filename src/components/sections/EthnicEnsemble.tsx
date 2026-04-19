@@ -4,10 +4,13 @@ import { useState, useEffect, useRef } from "react";
 import saree1 from "@/assets/saree-1.jpg";
 import saree2 from "@/assets/saree-2.jpg";
 import saree3 from "@/assets/saree-3.jpg";
+import { useQuery } from "@tanstack/react-query";
+import { fetchCategoryTree, getCategoryImageUrl } from "@/lib/api";
 
-const ensembles = [
+const staticEnsembles = [
   {
     title: "Traditional Elegance",
+    slug: "traditional-elegance",
     description: "Timeless classics for pujas, festivals, and family gatherings",
     image: saree1,
     tag: "Heritage",
@@ -15,6 +18,7 @@ const ensembles = [
   },
   {
     title: "Contemporary Chic",
+    slug: "contemporary-chic",
     description: "Modern silhouettes with ethnic soul for the new-age woman",
     image: saree2,
     tag: "Trending",
@@ -22,6 +26,7 @@ const ensembles = [
   },
   {
     title: "Festive Grandeur",
+    slug: "festive-grandeur",
     description: "Rich fabrics and vibrant hues for celebrations that shine",
     image: saree3,
     tag: "Limited",
@@ -30,6 +35,27 @@ const ensembles = [
 ];
 
 const EthnicEnsemble = () => {
+  const { data: treeRes } = useQuery({
+    queryKey: ["categoryTree"],
+    queryFn: fetchCategoryTree,
+  });
+
+  // Try to find Ethnic Ensemble, fallback to Occasions
+  const targetCategory = treeRes?.data?.find(c => c.slug === "ethnic-ensemble") || 
+                         treeRes?.data?.find(c => c.slug === "occasions");
+                         
+  const apiEnsembles = targetCategory?.children || [];
+
+  const ensembles = apiEnsembles.length > 0 
+    ? apiEnsembles.map((cat, i) => ({
+        title: cat.name,
+        description: cat.description || "Style-based collections for every occasion.",
+        image: getCategoryImageUrl(cat.imageUrl) || [saree1, saree2, saree3][i % 3],
+        tag: "Exclusive",
+        href: `/category/${targetCategory?.slug}/${cat.slug}`,
+      }))
+    : staticEnsembles;
+
   const [isPaused, setIsPaused] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
