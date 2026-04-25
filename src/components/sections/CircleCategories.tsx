@@ -65,7 +65,7 @@ const CircleCategories = () => {
         </div>
 
         {/* Categories Flex Grid - Single centered row */}
-        <div className="flex flex-nowrap md:flex-wrap justify-center items-start gap-6 md:gap-8 lg:gap-12 overflow-x-auto md:overflow-visible scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0 pb-2">
+        <div className="flex flex-nowrap md:flex-wrap justify-start md:justify-center items-start gap-6 md:gap-8 lg:gap-12 overflow-x-auto md:overflow-visible scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0 pb-2">
           {categories.map((category, index) => (
             <div key={category.name} className="flex-shrink-0 w-24 md:w-28">
               <CircleCard category={category} index={index} />

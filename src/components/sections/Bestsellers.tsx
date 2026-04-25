@@ -147,12 +147,10 @@ const Bestsellers = () => {
 
   useEffect(() => {
     const scrollContainer = scrollRef.current;
-    // Disable auto-scroll on mobile to prevent lag during manual swiping
-    if (!scrollContainer || isPaused || loading || products.length === 0 || isMobile) return;
+    if (!scrollContainer || isPaused || loading || products.length === 0) return;
 
     const scrollInterval = setInterval(() => {
       if (scrollContainer.scrollLeft + scrollContainer.clientWidth >= scrollContainer.scrollWidth - 2) {
-        // Instant reset back to start for a cleaner loop
         scrollContainer.scrollTo({ left: 0, behavior: "auto" });
       } else {
         scrollContainer.scrollBy({ left: 1, behavior: "auto" });
@@ -160,7 +158,7 @@ const Bestsellers = () => {
     }, 40);
 
     return () => clearInterval(scrollInterval);
-  }, [isPaused, loading, products.length, isMobile]);
+  }, [isPaused, loading, products.length]);
 
   return (
     <section id="bestsellers" className="py-12 md:py-16 bg-background relative overflow-hidden font-body">
@@ -180,7 +178,10 @@ const Bestsellers = () => {
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
           onTouchStart={() => setIsPaused(true)}
-          onTouchEnd={() => setIsPaused(false)}
+          onTouchEnd={() => {
+            // Wait 2 seconds after touch ends before resuming auto-scroll
+            setTimeout(() => setIsPaused(false), 2000);
+          }}
         >
           {loading ? (
              <div className="flex gap-4 overflow-hidden">
@@ -195,7 +196,7 @@ const Bestsellers = () => {
           ) : (
             <div 
               ref={scrollRef}
-              className="flex overflow-x-auto pb-8 gap-5 md:gap-8 scrollbar-hide snap-x md:snap-none -mx-4 px-4 md:mx-0 md:px-0 scroll-smooth"
+              className="flex overflow-x-auto pb-8 gap-5 md:gap-8 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0 scroll-smooth"
             >
               {products.map((product, index) => (
                 <div 

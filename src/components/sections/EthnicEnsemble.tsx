@@ -32,8 +32,7 @@ const EthnicEnsemble = () => {
 
   useEffect(() => {
     const scrollContainer = scrollRef.current;
-    // Disable auto-scroll on mobile to prevent lag during manual swiping
-    if (!scrollContainer || isPaused || isMobile) return;
+    if (!scrollContainer || isPaused) return;
 
     const scrollInterval = setInterval(() => {
       if (scrollContainer.scrollLeft + scrollContainer.clientWidth >= scrollContainer.scrollWidth - 2) {
@@ -44,7 +43,7 @@ const EthnicEnsemble = () => {
     }, 40);
 
     return () => clearInterval(scrollInterval);
-  }, [isPaused, isMobile]);
+  }, [isPaused]);
 
   return (
     <section id="ethnic-ensemble" className="py-12 md:py-16 bg-background relative overflow-hidden font-body">
@@ -64,14 +63,17 @@ const EthnicEnsemble = () => {
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
           onTouchStart={() => setIsPaused(true)}
-          onTouchEnd={() => setIsPaused(false)}
-          className="flex overflow-x-auto pb-8 gap-6 md:gap-8 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0 scroll-smooth snap-x"
+          onTouchEnd={() => {
+            // Wait 2 seconds before resuming
+            setTimeout(() => setIsPaused(false), 2000);
+          }}
+          className="flex overflow-x-auto pb-8 gap-6 md:gap-8 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0 scroll-smooth"
         >
           {ensembles.map((ensemble, index) => (
             <Link
               key={ensemble.title}
               to={ensemble.href}
-              className="flex-shrink-0 w-[240px] md:w-[calc(33.33%-22px)] group bg-secondary rounded-2xl overflow-hidden card-hover opacity-0 animate-fade-in-up relative snap-center"
+              className="flex-shrink-0 w-[240px] md:w-[calc(33.33%-22px)] group bg-secondary rounded-2xl overflow-hidden card-hover opacity-0 animate-fade-in-up relative"
               style={{ animationDelay: `${0.2 + index * 0.15}s` }}
             >
               <div className="aspect-[4/3] overflow-hidden">
