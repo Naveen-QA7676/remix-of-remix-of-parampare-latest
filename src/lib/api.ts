@@ -20,13 +20,13 @@ export interface Product {
   images: string[];
   category: string | Category;
   subcategory?: string | Category;
-  fabric?: string;
-  color?: string;
-  occasion?: string;
-  weave?: string;
-  border?: string;
-  pallu?: string;
-  blouse?: string;
+  fabric?: string[];
+  color?: string[];
+  occasion?: string[];
+  weave?: string[];
+  border?: string[];
+  pallu?: string[];
+  blouse?: string[];
   careInstructions: string[];
   inStock: boolean;
   stockQuantity: number;
@@ -50,12 +50,12 @@ export interface GetProductsParams {
   page?: number;
   limit?: number;
   search?: string;
-  fabric?: string;
-  occasion?: string;
-  color?: string;
-  weave?: string;
-  border?: string;
-  pallu?: string;
+  fabric?: string | string[];
+  occasion?: string | string[];
+  color?: string | string[];
+  weave?: string | string[];
+  border?: string | string[];
+  pallu?: string | string[];
 }
 
 export interface GetProductsResponse {
