@@ -423,10 +423,6 @@ const ProductDetail = () => {
             {/* Trust Badges */}
             <div className="grid grid-cols-2 gap-4 pt-4 border-t border-border/50">
               <div className="flex items-center gap-2 text-sm">
-                <Truck className="h-5 w-5 text-gold" />
-                <span>Free shipping above ₹999</span>
-              </div>
-              <div className="flex items-center gap-2 text-sm">
                 <RotateCcw className="h-5 w-5 text-gold" />
                 <span>7-day return policy</span>
               </div>
