@@ -1,16 +1,13 @@
 import { ArrowRight, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
-import saree1 from "@/assets/saree-1.jpg";
-import saree3 from "@/assets/saree-3.jpg";
 import { useQuery } from "@tanstack/react-query";
 import { fetchCategories, getCategoryImageUrl } from "@/lib/api";
 
-const staticCollections = [
+const staticCollectionsBase = [
   {
     title: "Your Shaadi Wardrobe",
     slug: "shaadi-wardrobe",
     description: "Curated wedding collections for your special day. From bridal reds to festive golds.",
-    image: saree1,
     link: "/category/shaadi-wardrobe",
     badge: "Wedding Special",
   },
@@ -18,7 +15,6 @@ const staticCollections = [
     title: "Ethnic Ensemble",
     slug: "ethnic-ensemble",
     description: "Style-based collections for every occasion. Traditional meets contemporary.",
-    image: saree3,
     link: "/category/ethnic-ensemble",
     badge: "Trending",
   },
@@ -32,7 +28,7 @@ const CuratedCollection = () => {
 
   const categories = categoriesRes?.data || [];
 
-  const collections = staticCollections.map((staticItem) => {
+  const collections = staticCollectionsBase.map((staticItem) => {
     const apiCategory = categories.find((c) => c.slug === staticItem.slug);
     const apiImageUrl = apiCategory?.imageUrl ? getCategoryImageUrl(apiCategory.imageUrl) : undefined;
     
@@ -40,7 +36,7 @@ const CuratedCollection = () => {
       ...staticItem,
       title: apiCategory?.name || staticItem.title,
       description: apiCategory?.description || staticItem.description,
-      image: apiImageUrl || staticItem.image,
+      image: apiImageUrl || "/placeholder.svg",
     };
   });
 

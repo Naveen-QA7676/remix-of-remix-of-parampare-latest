@@ -22,7 +22,7 @@ const Cart = () => {
 
   const { cartItems, loading, updateQuantity, removeFromCart: removeItem, subtotal } = useCart();
 
-  const deliveryCharge = subtotal >= 999 ? 0 : 99;
+  const deliveryCharge = subtotal >= 2999 ? 0 : 99;
   const totalAmount = subtotal + deliveryCharge;
 
   const handlePlaceOrder = () => {
@@ -133,7 +133,7 @@ const Cart = () => {
                   </span>
                 </div>
                 {deliveryCharge > 0 && (
-                  <p className="text-xs text-gold">Add ₹{(999 - subtotal).toLocaleString()} more for free delivery</p>
+                  <p className="text-xs text-gold">Add ₹{(2999 - subtotal).toLocaleString()} more for free delivery</p>
                 )}
                 <div className="border-t border-border pt-4">
                   <div className="flex justify-between">

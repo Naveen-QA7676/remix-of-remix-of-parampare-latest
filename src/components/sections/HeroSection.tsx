@@ -54,7 +54,7 @@ const HeroSection = () => {
           
           {/* Heading */}
           <h2 
-            className="font-display text-5xl md:text-7xl lg:text-8xl font-semibold text-foreground leading-[1.1] tracking-tight opacity-0 animate-fade-in" 
+            className="font-display text-4xl md:text-7xl lg:text-8xl font-semibold text-foreground leading-[1.1] tracking-tight opacity-0 animate-blur-in" 
             style={{ animationDelay: "0.4s" }}
           >
             Threads of
@@ -95,7 +95,7 @@ const HeroSection = () => {
             className="flex flex-wrap gap-8 pt-8 opacity-0 animate-fade-in" 
             style={{ animationDelay: "1s" }}
           >
-            {["100% Handwoven", "Direct from Weaver", "Free Shipping ₹3999+"].map((badge) => (
+            {["100% Handwoven", "Direct from Weaver", "Free Shipping ₹2999+"].map((badge) => (
               <span 
                 key={badge} 
                 className="flex items-center gap-2.5 text-sm text-muted-foreground font-body"

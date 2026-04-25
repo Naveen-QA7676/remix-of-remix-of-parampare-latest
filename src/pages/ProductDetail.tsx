@@ -299,15 +299,15 @@ const ProductDetail = () => {
             <div className="grid grid-cols-2 gap-4 py-4 border-y border-border/50">
               <div>
                 <p className="text-sm text-muted-foreground">Color</p>
-                <p className="font-medium">{product.color}</p>
+                <p className="font-medium">{Array.isArray(product.color) ? product.color.join(', ') : (product.color || 'N/A')}</p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Border Type</p>
-                <p className="font-medium">{product.border || "Traditional"}</p>
+                <p className="font-medium">{Array.isArray(product.border) ? product.border.join(', ') : (product.border || "Traditional")}</p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Blouse Piece</p>
-                <p className="font-medium">{product.blouse || "Included"}</p>
+                <p className="font-medium">{Array.isArray(product.blouse) ? product.blouse.join(', ') : (product.blouse || "Included")}</p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Availability</p>
@@ -422,10 +422,6 @@ const ProductDetail = () => {
 
             {/* Trust Badges */}
             <div className="grid grid-cols-2 gap-4 pt-4 border-t border-border/50">
-              <div className="flex items-center gap-2 text-sm">
-                <Truck className="h-5 w-5 text-gold" />
-                <span>Free shipping above ₹999</span>
-              </div>
               <div className="flex items-center gap-2 text-sm">
                 <RotateCcw className="h-5 w-5 text-gold" />
                 <span>7-day return policy</span>

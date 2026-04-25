@@ -1,7 +1,6 @@
 import TopUtilityHeader from "@/components/layout/TopUtilityHeader";
 import MainHeader from "@/components/layout/MainHeader";
 import HeroSection from "@/components/sections/HeroSection";
-import PromoBanner from "@/components/sections/PromoBanner";
 import CircleCategories from "@/components/sections/CircleCategories";
 import ShaadiWardrobe from "@/components/sections/ShaadiWardrobe";
 import Bestsellers from "@/components/sections/Bestsellers";
@@ -20,7 +19,6 @@ const Index = () => {
       <MainHeader />
       <main className="flex flex-col pb-20">
         <HeroSection />
-        <PromoBanner />
         <div className="flex flex-col gap-20 md:gap-32 mt-16 md:mt-24">
           <CircleCategories />
           <ShaadiWardrobe />

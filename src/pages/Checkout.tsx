@@ -30,7 +30,7 @@ const Checkout = () => {
   const cartItems = isDirectBuy ? [directBuyItem] : globalCartItems;
   const subtotal = isDirectBuy ? (directBuyItem.price * directBuyItem.quantity) : globalSubtotal;
 
-  const deliveryCharge = subtotal >= 999 ? 0 : 99;
+  const deliveryCharge = subtotal >= 2999 ? 0 : 99;
   const total = subtotal + deliveryCharge;
 
   const [formData, setFormData] = useState<Omit<Address, "id" | "_id" | "isDefault">>({
