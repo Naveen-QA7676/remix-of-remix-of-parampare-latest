@@ -54,7 +54,7 @@ const HeroSection = () => {
           
           {/* Heading */}
           <h2 
-            className="font-display text-5xl md:text-7xl lg:text-8xl font-semibold text-foreground leading-[1.1] tracking-tight opacity-0 animate-fade-in" 
+            className="font-display text-4xl md:text-7xl lg:text-8xl font-semibold text-foreground leading-[1.1] tracking-tight opacity-0 animate-blur-in" 
             style={{ animationDelay: "0.4s" }}
           >
             Threads of

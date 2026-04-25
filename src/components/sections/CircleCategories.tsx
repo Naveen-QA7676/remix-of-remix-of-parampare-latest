@@ -1,9 +1,5 @@
 import { Link } from "react-router-dom";
 import { Sparkles } from "lucide-react";
-import category1 from "@/assets/category-1.png";
-import category2 from "@/assets/category-2.png";
-import category3 from "@/assets/category-3.png";
-import category4 from "@/assets/category-4.png";
 import { useQuery } from "@tanstack/react-query";
 import { fetchCategoryTree, getCategoryImageUrl } from "@/lib/api";
 
@@ -16,7 +12,7 @@ const CircleCard = ({ category, index }: { category: { name: string; image: stri
     >
       <div className="relative flex flex-col items-center">
         {/* Circle image - Small and centered */}
-        <div className="relative w-16 h-16 md:w-20 md:h-20 rounded-full overflow-hidden border border-border/50 group-hover:border-gold transition-all duration-500 bg-secondary shadow-sm group-hover:shadow-md">
+        <div className="relative w-20 h-20 md:w-24 md:h-24 rounded-full overflow-hidden border border-border/50 group-hover:border-gold transition-all duration-500 bg-secondary shadow-sm group-hover:shadow-md">
           <img
             src={category.image}
             alt={category.name}
@@ -34,15 +30,6 @@ const CircleCard = ({ category, index }: { category: { name: string; image: stri
     </Link>
   );
 };
-
-const staticCategories = [
-  { name: "Silk Sarees", image: category2, href: "/category/shop-by-category/silk-sarees" },
-  { name: "Cotton Sarees", image: category3, href: "/category/shop-by-category/cotton-sarees" },
-  { name: "Bridal Collection", image: category4, href: "/category/shop-by-category/bridal-collection" },
-  { name: "Festive Wear", image: category1, href: "/category/occasions/festive-wear" },
-  { name: "Daily Wear", image: category2, href: "/category/shop-by-category/daily-wear" },
-];
-
 const CircleCategories = () => {
   const { data: treeRes } = useQuery({
     queryKey: ["categoryTree"],
@@ -51,14 +38,17 @@ const CircleCategories = () => {
 
   const shopByCategory = treeRes?.data?.find(c => c.slug === "shop-by-category");
   const apiCategories = shopByCategory?.children || [];
+  
+  // Also check if they are directly under root if shop-by-category doesn't exist
+  const effectiveCategories = apiCategories.length > 0 
+    ? apiCategories 
+    : (treeRes?.data?.filter(c => c.level === 0 && c.children && c.children.length > 0) || []);
 
-  const categories = apiCategories.length > 0
-    ? apiCategories.map((cat, i) => ({
-        name: cat.name,
-        image: getCategoryImageUrl(cat.imageUrl) || [category1, category2, category3, category4][i % 4],
-        href: `/category/shop-by-category/${cat.slug}`,
-      }))
-    : staticCategories;
+  const categories = effectiveCategories.map((cat) => ({
+    name: cat.name,
+    image: getCategoryImageUrl(cat.imageUrl) || "/placeholder.svg",
+    href: `/category/shop-by-category/${cat.slug}`,
+  }));
 
   return (
     <section className="py-12 md:py-16 px-4 bg-background">
@@ -75,9 +65,9 @@ const CircleCategories = () => {
         </div>
 
         {/* Categories Flex Grid - Single centered row */}
-        <div className="flex flex-nowrap md:flex-wrap justify-center items-start gap-4 md:gap-8 lg:gap-12 overflow-x-auto md:overflow-visible scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
+        <div className="flex flex-nowrap md:flex-wrap justify-center items-start gap-6 md:gap-8 lg:gap-12 overflow-x-auto md:overflow-visible scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0 pb-2">
           {categories.map((category, index) => (
-            <div key={category.name} className="flex-shrink-0 w-20 md:w-24">
+            <div key={category.name} className="flex-shrink-0 w-24 md:w-28">
               <CircleCard category={category} index={index} />
             </div>
           ))}

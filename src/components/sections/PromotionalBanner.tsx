@@ -22,7 +22,7 @@ const PromotionalBanner = () => {
             <span className="w-8 h-[1px] bg-gold"></span>
             Exclusive Preview
           </span>
-          <h2 className="font-display text-4xl md:text-5xl lg:text-6xl font-medium leading-tight mb-6 text-white">
+          <h2 className="font-display text-3xl md:text-5xl lg:text-6xl font-medium leading-tight mb-6 text-white">
             The Heritage Silk Collection
           </h2>
           <p className="font-body text-white/80 text-lg mb-8 max-w-md">

@@ -78,7 +78,7 @@ const getSmartResponse = (userMessage: string): string => {
 };
 
 const Chatbot = forwardRef<HTMLDivElement>((_, ref) => {
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputValue, setInputValue] = useState("");
   const [isTyping, setIsTyping] = useState(false);
