@@ -2,6 +2,7 @@ import { ArrowRight, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { fetchCategoryTree, getCategoryImageUrl } from "@/lib/api";
+import { useState, useEffect, useRef } from "react";
 
 
 const ShaadiWardrobe = () => {
@@ -19,6 +20,24 @@ const ShaadiWardrobe = () => {
     image: getCategoryImageUrl(cat.imageUrl) || "/placeholder.svg",
     href: `/category/shaadi-wardrobe/${cat.slug}`,
   }));
+  
+  const [isPaused, setIsPaused] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const scrollContainer = scrollRef.current;
+    if (!scrollContainer || isPaused || collections.length === 0) return;
+
+    const scrollInterval = setInterval(() => {
+      if (scrollContainer.scrollLeft + scrollContainer.clientWidth >= scrollContainer.scrollWidth - 2) {
+        scrollContainer.scrollTo({ left: 0, behavior: "auto" });
+      } else {
+        scrollContainer.scrollBy({ left: 1, behavior: "auto" });
+      }
+    }, 40);
+
+    return () => clearInterval(scrollInterval);
+  }, [isPaused, collections.length]);
 
   return (
     <section id="shaadi-wardrobe" className="py-12 md:py-16 bg-secondary relative overflow-hidden">
@@ -41,9 +60,19 @@ const ShaadiWardrobe = () => {
         </div>
 
         {/* Modern Horizontal Scroll */}
-        <div className="flex overflow-x-auto pb-8 gap-4 md:gap-6 scrollbar-hide snap-x snap-mandatory -mx-4 px-4 md:mx-0 md:px-0">
+        <div 
+          ref={scrollRef}
+          onMouseEnter={() => setIsPaused(true)}
+          onMouseLeave={() => setIsPaused(false)}
+          onTouchStart={() => setIsPaused(true)}
+          onTouchEnd={() => {
+            // Wait 2 seconds before resuming
+            setTimeout(() => setIsPaused(false), 2000);
+          }}
+          className="flex overflow-x-auto pb-8 gap-4 md:gap-6 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0 scroll-smooth"
+        >
           {collections.map((collection, index) => (
-            <div key={collection.title} className="flex-shrink-0 w-[240px] md:w-[300px] snap-center">
+            <div key={collection.title} className="flex-shrink-0 w-[240px] md:w-[300px]">
               <Link
                 to={collection.href}
                 className="group relative block overflow-hidden rounded-2xl aspect-[3/4] card-hover opacity-0 animate-fade-in-up shadow-lg"
