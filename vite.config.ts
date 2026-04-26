@@ -9,22 +9,18 @@ export default defineConfig(({ mode }) => {
 
   return {
     server: {
-      host: true,
+      host: "::",
       port: 8080,
       proxy: {
         "/api": {
           target: apiTarget.replace(/\/$/, ""),
           changeOrigin: true,
           secure: false,
-          timeout: 60000,
-          proxyTimeout: 60000,
         },
         "/uploads": {
           target: apiTarget.replace(/\/$/, ""),
           changeOrigin: true,
           secure: false,
-          timeout: 60000,
-          proxyTimeout: 60000,
         },
       },
     },
