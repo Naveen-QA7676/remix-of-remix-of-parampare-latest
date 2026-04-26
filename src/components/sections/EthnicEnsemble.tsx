@@ -67,7 +67,7 @@ const EthnicEnsemble = () => {
             // Wait 2 seconds before resuming
             setTimeout(() => setIsPaused(false), 2000);
           }}
-          className="flex overflow-x-auto pb-8 gap-6 md:gap-8 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0 scroll-smooth"
+          className="flex overflow-x-auto pb-8 gap-6 md:gap-8 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0"
         >
           {ensembles.map((ensemble, index) => (
             <Link

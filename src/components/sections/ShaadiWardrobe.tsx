@@ -69,7 +69,7 @@ const ShaadiWardrobe = () => {
             // Wait 2 seconds before resuming
             setTimeout(() => setIsPaused(false), 2000);
           }}
-          className="flex overflow-x-auto pb-8 gap-4 md:gap-6 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0 scroll-smooth"
+          className="flex overflow-x-auto pb-8 gap-4 md:gap-6 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0"
         >
           {collections.map((collection, index) => (
             <div key={collection.title} className="flex-shrink-0 w-[240px] md:w-[300px]">

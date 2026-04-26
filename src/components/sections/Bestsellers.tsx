@@ -146,12 +146,12 @@ const Bestsellers = () => {
           ) : (
             <div 
               ref={scrollRef}
-              className="flex overflow-x-auto pb-8 gap-5 md:gap-8 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0 scroll-smooth"
+              className="flex overflow-x-auto pb-8 gap-5 md:gap-8 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0"
             >
               {products.map((product, index) => (
                 <div 
                   key={product.id} 
-                  className="flex-shrink-0 w-[240px] md:w-[300px] group opacity-0 animate-fade-in-up snap-center"
+                  className="flex-shrink-0 w-[240px] md:w-[300px] group opacity-0 animate-fade-in-up"
                   style={{ animationDelay: `${0.3 + index * 0.1}s` }}
                   onMouseEnter={() => setHoveredId(product.id)}
                   onMouseLeave={() => setHoveredId(null)}
