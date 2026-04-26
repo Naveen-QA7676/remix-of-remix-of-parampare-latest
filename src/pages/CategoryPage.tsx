@@ -26,6 +26,17 @@ type Product = APIProduct & {
   badge?: string;
 };
 
+const findCategory = (categories: Category[], slug: string): Category | null => {
+  for (const cat of categories) {
+    if (cat.slug === slug) return cat;
+    if (cat.children?.length) {
+      const found = findCategory(cat.children, slug);
+      if (found) return found;
+    }
+  }
+  return null;
+};
+
 const CategoryPage = () => {
   const { slug, subslug } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -50,20 +61,9 @@ const CategoryPage = () => {
           if (currentCat) {
             setCategory(currentCat);
             if (subslug) {
-              const currentSub = catRes.data.find(c => c.slug === subslug);
-              if (currentSub) {
-                setSubcategory(currentSub);
-              } else if (subslug === "silk-and-cotton-material") {
-                // Mock subcategory if not in DB yet
-                setSubcategory({ 
-                  _id: "silk-and-cotton-manual", 
-                  name: "Silk and Cotton Material", 
-                  slug: "silk-and-cotton-material", 
-                  level: 1 
-                });
-              } else {
-                setSubcategory(null);
-              }
+              const sub = catRes.data.find(c => c.slug === subslug) || 
+                          findCategory(currentCat.children || [], subslug);
+              setSubcategory(sub || null);
             } else {
               setSubcategory(null);
             }
@@ -91,12 +91,13 @@ const CategoryPage = () => {
         if (subcategory) params.subcategory = subcategory._id;
         
         // Map frontend filters to API params
-        if (selectedFilters.fabric?.length) params.fabric = selectedFilters.fabric[0];
-        if (selectedFilters.occasion?.length) params.occasion = selectedFilters.occasion[0];
-        if (selectedFilters.color?.length) params.color = selectedFilters.color[0];
-        if (selectedFilters.weave?.length) params.weave = selectedFilters.weave[0];
-        if (selectedFilters.border?.length) params.border = selectedFilters.border[0];
-        if (selectedFilters.pallu?.length) params.pallu = selectedFilters.pallu[0];
+        if (selectedFilters.fabric?.length) params.fabric = selectedFilters.fabric.join(',');
+        if (selectedFilters.occasion?.length) params.occasion = selectedFilters.occasion.join(',');
+        if (selectedFilters.color?.length) params.color = selectedFilters.color.join(',');
+        if (selectedFilters.weave?.length) params.weave = selectedFilters.weave.join(',');
+        if (selectedFilters.border?.length) params.border = selectedFilters.border.join(',');
+        if (selectedFilters.pallu?.length) params.pallu = selectedFilters.pallu.join(',');
+        if (selectedFilters.blouse?.length) params.blouse = selectedFilters.blouse.join(',');
 
         const response = await fetchProducts(params);
         if (response.success) {

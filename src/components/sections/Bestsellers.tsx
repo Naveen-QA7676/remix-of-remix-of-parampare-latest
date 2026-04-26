@@ -25,56 +25,6 @@ type Product = {
   inStock: boolean;
 };
 
-const products = [
-  {
-    id: "bs-1",
-    name: "Maroon Kasuti Ilkal Saree",
-    price: 4999,
-    originalPrice: 6499,
-    image: saree1,
-    tag: "Bestseller",
-    discount: "23% OFF",
-    rating: 4.5,
-    reviews: 89,
-    inStock: true,
-  },
-  {
-    id: "bs-2",
-    name: "Royal Blue Silk Saree",
-    price: 5499,
-    originalPrice: 7999,
-    image: saree2,
-    tag: "New Arrival",
-    discount: "31% OFF",
-    rating: 4.7,
-    reviews: 56,
-    inStock: true,
-  },
-  {
-    id: "bs-3",
-    name: "Green Zari Work Saree",
-    price: 6999,
-    originalPrice: 8999,
-    image: saree3,
-    tag: null,
-    discount: "22% OFF",
-    rating: 4.6,
-    reviews: 120,
-    inStock: true,
-  },
-  {
-    id: "bs-4",
-    name: "Pink Festive Silk Saree",
-    price: 5999,
-    originalPrice: 7499,
-    image: saree4,
-    tag: "Sale",
-    discount: "20% OFF",
-    rating: 4.8,
-    reviews: 45,
-    inStock: true,
-  },
-];
 
 const Bestsellers = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -84,8 +34,8 @@ const Bestsellers = () => {
   useEffect(() => {
     const loadBestsellers = async () => {
       try {
-        const res = await fetchProducts({ limit: 8, sort: "popularity" });
-        if (res.success && res.products.length > 0) {
+        const res = await fetchProducts({ limit: 8, sort: "newest" });
+        if (res.success && res.products && res.products.length > 0) {
           const mapped = res.products.map(p => ({
             id: p.id,
             name: p.name,
