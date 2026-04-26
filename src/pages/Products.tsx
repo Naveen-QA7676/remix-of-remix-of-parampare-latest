@@ -45,7 +45,7 @@ const sortOptions = [
 
 const Products = () => {
   const [searchParams] = useSearchParams();
-  const category = searchParams.get("category") || "All Sarees";
+  const category = searchParams.get("category") || "";
   const search = searchParams.get("search") || "";
   const occasionParam = searchParams.get("occasion");
   const fabricParam = searchParams.get("fabric");
@@ -99,12 +99,13 @@ const Products = () => {
         };
 
         // Map frontend filters to API params
-        if (selectedFilters.fabric?.length) params.fabric = selectedFilters.fabric[0];
-        if (selectedFilters.occasion?.length) params.occasion = selectedFilters.occasion[0];
-        if (selectedFilters.color?.length) params.color = selectedFilters.color[0];
-        if (selectedFilters.weave?.length) params.weave = selectedFilters.weave[0];
-        if (selectedFilters.border?.length) params.border = selectedFilters.border[0];
-        if (selectedFilters.pallu?.length) params.pallu = selectedFilters.pallu[0];
+        if (selectedFilters.fabric?.length) params.fabric = selectedFilters.fabric.join(',');
+        if (selectedFilters.occasion?.length) params.occasion = selectedFilters.occasion.join(',');
+        if (selectedFilters.color?.length) params.color = selectedFilters.color.join(',');
+        if (selectedFilters.weave?.length) params.weave = selectedFilters.weave.join(',');
+        if (selectedFilters.border?.length) params.border = selectedFilters.border.join(',');
+        if (selectedFilters.pallu?.length) params.pallu = selectedFilters.pallu.join(',');
+        if (selectedFilters.blouse?.length) params.blouse = selectedFilters.blouse.join(',');
 
         const response = await fetchProducts(params);
         if (response.success && Array.isArray(response.products)) {
@@ -211,7 +212,7 @@ const Products = () => {
         {/* Page Header */}
         <div className="mb-8">
           <h1 className="text-3xl md:text-4xl font-display font-semibold text-foreground mb-2">
-            {category}
+            {category || "All Sarees"}
           </h1>
           <p className="text-muted-foreground">
             Handwoven authentic Ilkal sarees with traditional craftsmanship
